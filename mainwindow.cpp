@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "networkthreader.h"
 #include <string>
+#include <thread>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,6 +18,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButtonStart_clicked()
 {
+    /*
     std::string dest;
     int port, size, number;
 
@@ -30,4 +33,15 @@ void MainWindow::on_pushButtonStart_clicked()
     }
     //start server
     server(port);
+    */
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+   std::thread worker(tryit,this);
+   worker.join();
+}
+
+void MainWindow::messageHandler_slot(QString s){
+    ui->textBrowserOutput->setText(s);
 }

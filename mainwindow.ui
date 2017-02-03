@@ -223,19 +223,6 @@
      </property>
     </widget>
    </widget>
-   <widget class="QPlainTextEdit" name="plainTextEditOutput">
-    <property name="geometry">
-     <rect>
-      <x>290</x>
-      <y>46</y>
-      <width>291</width>
-      <height>221</height>
-     </rect>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_8">
     <property name="geometry">
      <rect>
@@ -298,6 +285,29 @@
     </property>
     <property name="invertedAppearance">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>280</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Threadit bby</string>
+    </property>
+   </widget>
+   <widget class="QTextBrowser" name="textBrowserOutput">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>40</y>
+      <width>281</width>
+      <height>231</height>
+     </rect>
     </property>
    </widget>
   </widget>

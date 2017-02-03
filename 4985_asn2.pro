@@ -24,8 +24,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    networkthreader.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    networkthreader.h
 
 FORMS    += mainwindow.ui

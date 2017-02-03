@@ -16,8 +16,11 @@ public:
     ~MainWindow();
 
 private slots:
+    void messageHandler_slot(QString);
 
     void on_pushButtonStart_clicked();
+
+    void on_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
