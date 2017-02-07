@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <string>
 
 namespace Ui {
 class MainWindow;
@@ -16,11 +17,10 @@ public:
     ~MainWindow();
 
 private slots:
-    void messageHandler_slot(QString);
+    void messageAdd_slot(std::string);
+    void messageClear_slot();
 
     void on_pushButtonStart_clicked();
-
-    void on_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;

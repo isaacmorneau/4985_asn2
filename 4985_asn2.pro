@@ -31,3 +31,5 @@ HEADERS  += mainwindow.h \
     networkthreader.h
 
 FORMS    += mainwindow.ui
+
+LIBS    += -lws2_32
