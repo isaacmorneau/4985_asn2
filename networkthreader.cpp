@@ -14,7 +14,7 @@ using namespace std;
 //starts server
 
 
-sharedinfo sharedInfo;
+sharedinfo sharedInfo = {0};
 
 void serverTCP(int port){
     resultClear();
@@ -55,15 +55,24 @@ void serverTCP(int port){
         return;
     }
 
+    //add checkbox for whether or not to loop for new connections
     while(sharedInfo.running){//accept connections one after another
+        resultAdd("Waiting for connection...");
         if((sharedInfo.sharedSocket = accept(tempSock,0,0)) == INVALID_SOCKET){
             resultAdd("accept Failed");
             return;
         }
+        resultAdd("Connected.");
         DWORD flags = 0;
+        if(sharedInfo.buffer == 0){
+            sharedInfo.buffer = static_cast<char*>(malloc(2048 * sizeof(char)));
+            sharedInfo.wsabuff.buf = sharedInfo.buffer;
+            sharedInfo.wsabuff.len = 2048;
+        }
         if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                    &flags, &sharedInfo.overlapped, workerRoutine_TCPserver)){
             if(WSAGetLastError() != WSA_IO_PENDING){
+                closesocket(sharedInfo.sharedSocket);
                 resultAdd("WSARecv Failed");
                 return;
             }
@@ -75,13 +84,27 @@ void serverTCP(int port){
 
 void CALLBACK workerRoutine_TCPserver(DWORD error, DWORD bytesTrans,
                                       LPWSAOVERLAPPED overlapped, DWORD inFlags){
-    if(bytesTrans) {
+    if(error){
+        closesocket(sharedInfo.sharedSocket);
+        resultAdd("Error in WSARecv");
+        return;
+    }
+    if (bytesTrans) {
         resultAdd("Got Something!");
+        //save it
     } else {
         resultAdd("Nothing read");
     }
-}
 
+    DWORD flags = 0;
+    if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
+               &flags, &sharedInfo.overlapped, workerRoutine_TCPserver)){
+        if(WSAGetLastError() != WSA_IO_PENDING){
+            resultAdd("WSARecv Failed");
+            return;
+        }
+    }
+}
 
 
 void serverUDP(int port){
@@ -144,11 +167,16 @@ void clientTCP(string dest, int  port, int size, int number){
     sharedInfo.sharedSocket = sendSock;
 
     resultAdd("Sending...");
-    while(sharedInfo.running){//accept connections one after another
+
+    if(sharedInfo.buffer != 0){
+        free(sharedInfo.buffer);
+    }
+    sharedInfo.buffer = static_cast<char*>(malloc(size * sizeof(char)));
+    memset(sharedInfo.buffer,'a', size);
+    while(sharedInfo.running && number--){//keep sending
         DWORD flags = 0;
-        memset(sharedInfo.buffer,'a',DATA_BUFSIZE);
         sharedInfo.wsabuff.buf = sharedInfo.buffer;
-        sharedInfo.wsabuff.len = DATA_BUFSIZE;
+        sharedInfo.wsabuff.len = size;
         if(WSASend(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                    flags, &sharedInfo.overlapped, workerRoutine_TCPclient)){
             if(WSAGetLastError() != WSA_IO_PENDING){
@@ -156,8 +184,12 @@ void clientTCP(string dest, int  port, int size, int number){
                 return;
             }
         }
+        //increment status bar
     }
-    resultAdd("Stoped.");
+    if(sharedInfo.running)
+        resultAdd("Finished.");
+    else
+        resultAdd("Stopped.");
 }
 
 void CALLBACK workerRoutine_TCPclient(DWORD error, DWORD bytesTrans,
