@@ -1,6 +1,6 @@
+#include "networkthreader.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "networkthreader.h"
 #include <string>
 #include <thread>
 
@@ -9,6 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    //to facilitate the hack for sending data to the window
+    mainwindowptr = this;
 }
 
 MainWindow::~MainWindow()
@@ -29,17 +31,17 @@ void MainWindow::on_pushButtonStart_clicked()
         number = ui->lineEditPacketNum->text().toInt();
         std::thread client;
         if(ui->comboBoxProto->currentIndex() == 0)
-            client = std::thread(clientTCP, this, dest, port, size, number);
+            client = std::thread(clientTCP, dest, port, size, number);
         else
-            client = std::thread(clientUDP, this, dest, port, size, number);
+            client = std::thread(clientUDP, dest, port, size, number);
         client.detach();
     } else {
         //start server
         std::thread server;
         if(ui->comboBoxProto->currentIndex() == 0)
-            server = std::thread(serverTCP,this, port);
+            server = std::thread(serverTCP, port);
         else
-            server = std::thread(serverUDP,this, port);
+            server = std::thread(serverUDP, port);
         server.detach();
     }
 }
@@ -47,7 +49,6 @@ void MainWindow::on_pushButtonStart_clicked()
 void MainWindow::messageAdd_slot(std::string s){
     //make text appened on a new line
     ui->textBrowserOutput->append(s.c_str());
-    ui->textBrowserOutput->append("\n");
 }
 
 void MainWindow::messageClear_slot(){
