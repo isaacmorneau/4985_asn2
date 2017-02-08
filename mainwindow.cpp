@@ -54,3 +54,8 @@ void MainWindow::messageAdd_slot(std::string s){
 void MainWindow::messageClear_slot(){
     ui->textBrowserOutput->clear();
 }
+
+void MainWindow::on_pushButtonStop_clicked()
+{
+    sharedInfo.running = false;
+}

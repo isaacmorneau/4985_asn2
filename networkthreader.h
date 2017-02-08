@@ -20,19 +20,26 @@ void clientTCP(std::string dest, int  port, int size, int number);
 void clientUDP(std::string dest, int  port, int size, int number);
 
 //callback for async events
-void CALLBACK workerRoutine_TCPserver(DWORD Error, DWORD BytesTransferred,
-   LPWSAOVERLAPPED Overlapped, DWORD InFlags);
+void CALLBACK workerRoutine_TCPserver(DWORD error, DWORD bytesTrans,
+   LPWSAOVERLAPPED overlapped, DWORD inFlags);
 
-void CALLBACK workerRoutine_UDPserver(DWORD Error, DWORD BytesTransferred,
-   LPWSAOVERLAPPED Overlapped, DWORD InFlags);
+void CALLBACK workerRoutine_TCPclient(DWORD error, DWORD bytesTrans,
+   LPWSAOVERLAPPED overlapped, DWORD inFlags);
+
+void CALLBACK workerRoutine_UDPserver(DWORD error, DWORD bytesTrans,
+   LPWSAOVERLAPPED overlapped, DWORD inFlags);
 //thread for consuming connections
 void workerThread_TCPserver(WSAEVENT event);
 
-typedef struct _SOCKET_INFORMATION {
-   OVERLAPPED Overlapped;
-   SOCKET Socket;
-   CHAR Buffer[DATA_BUFSIZE];
-   WSABUF DataBuf;
-} SOCKET_INFO, *LPSOCKET_INFO;
+typedef struct _sharedinfo {
+    SOCKET sharedSocket;
+    char buffer[DATA_BUFSIZE];
+    DWORD recvd;
+    WSABUF wsabuff;
+    bool running;
+    OVERLAPPED overlapped;
+} sharedinfo;
+
+extern sharedinfo sharedInfo;
 
 #endif // NETWORKINGTHREADER_H
