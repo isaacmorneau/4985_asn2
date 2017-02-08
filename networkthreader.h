@@ -4,8 +4,6 @@
 #include <windows.h>
 #include <string>
 
-#define DATA_BUFSIZE 2048
-
 //hack to return info to the gui thread
 void resultAdd(std::string msg);
 void resultClear();
@@ -33,7 +31,7 @@ void workerThread_TCPserver(WSAEVENT event);
 
 typedef struct _sharedinfo {
     SOCKET sharedSocket;
-    char buffer[DATA_BUFSIZE];
+    char *buffer;
     DWORD recvd;
     WSABUF wsabuff;
     bool running;
