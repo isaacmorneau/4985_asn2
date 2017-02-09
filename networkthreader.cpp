@@ -4,6 +4,7 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <stdio.h>
+#include <sstream>
 
 #include "networkthreader.h"
 #include "mainwindow.h"
@@ -14,7 +15,7 @@ using namespace std;
 //starts server
 
 
-sharedinfo sharedInfo = {0};
+sharedinfo sharedInfo = {};
 
 void serverTCP(int port, int buffsize){
     resultClear();
@@ -28,11 +29,11 @@ void serverTCP(int port, int buffsize){
     sharedInfo.running = true;
 
     if(WSAStartup(0x0202,&wsaData) != 0){
-        resultAdd("WSAStartup Failed");
+        resultAdd("WSAStartup Failed.");
         return;
     }
     if((tempSock = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
-        resultAdd("WSASocket Failed");
+        resultError("WSASocket Failed.");
         return;
     }
     addr.sin_family = AF_INET;
@@ -40,12 +41,12 @@ void serverTCP(int port, int buffsize){
     addr.sin_port = htons(port);
 
     if(bind(tempSock, (PSOCKADDR)&addr,sizeof(SOCKADDR_IN)) == SOCKET_ERROR){
-        resultAdd("bind Failed");
+        resultError("bind Failed.");
         return;
     }
 
     if(listen(tempSock, 5)){
-        resultAdd("listen Failed");
+        resultError("listen Failed.");
         return;
     }
 
@@ -53,7 +54,7 @@ void serverTCP(int port, int buffsize){
     while(sharedInfo.running){//accept connections one after another
         resultAdd("Waiting for connection...");
         if((sharedInfo.sharedSocket = accept(tempSock,0,0)) == INVALID_SOCKET){
-            resultAdd("accept Failed");
+            resultError("accept Failed.");
             return;
         }
         resultAdd("Connected.");
@@ -67,7 +68,7 @@ void serverTCP(int port, int buffsize){
                    &flags, &sharedInfo.overlapped, workerRoutine_server)){
             if(WSAGetLastError() != WSA_IO_PENDING){
                 closesocket(sharedInfo.sharedSocket);
-                resultAdd("WSARecv Failed");
+                resultError("WSARecv Failed.");
                 return;
             }
         }
@@ -87,11 +88,12 @@ void serverUDP(int port, int buffsize){
     sharedInfo.running = true;
 
     if(WSAStartup(0x0202,&wsaData) != 0){
-        resultAdd("WSAStartup Failed");
+        resultError("WSAStartup Failed.");
         return;
     }
-    if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_DGRAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
-        resultAdd("WSASocket Failed");
+    if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_DGRAM,0,0,0,WSA_FLAG_OVERLAPPED))
+            == INVALID_SOCKET){
+        resultError("WSASocket Failed.");
         return;
     }
     addr.sin_family = AF_INET;
@@ -99,7 +101,7 @@ void serverUDP(int port, int buffsize){
     addr.sin_port = htons(port);
 
     if(bind(sharedInfo.sharedSocket, (PSOCKADDR)&addr,sizeof(SOCKADDR_IN)) == SOCKET_ERROR){
-        resultAdd("bind Failed");
+        resultError("bind Failed.");
         return;
     }
 
@@ -110,11 +112,12 @@ void serverUDP(int port, int buffsize){
         sharedInfo.wsabuff.buf = sharedInfo.buffer;
         sharedInfo.wsabuff.len = buffsize;
     }
-    if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-               &flags, &sharedInfo.overlapped, workerRoutine_server)){
+    //sharedinfo temp = sharedInfo;
+    if(WSARecvFrom(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
+                   &flags, 0, 0, &sharedInfo.overlapped, workerRoutine_server)){
         if(WSAGetLastError() != WSA_IO_PENDING){
+            resultError("WSARecv Failed.");
             closesocket(sharedInfo.sharedSocket);
-            resultAdd("WSARecv Failed");
             return;
         }
     }
@@ -122,10 +125,12 @@ void serverUDP(int port, int buffsize){
 }
 
 void CALLBACK workerRoutine_server(DWORD error, DWORD bytesTrans,
-                                   LPWSAOVERLAPPED overlapped, DWORD inFlags){
+                                   LPWSAOVERLAPPED, DWORD){
     if(error){
-        closesocket(sharedInfo.sharedSocket);
-        resultAdd("Error in WSARecv");
+        if(sharedInfo.running){
+            resultError("Error in WSARecv.");
+        }
+        resultAdd("Quitting.");
         return;
     }
     if (bytesTrans) {
@@ -142,7 +147,7 @@ void CALLBACK workerRoutine_server(DWORD error, DWORD bytesTrans,
         if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                    &flags, &sharedInfo.overlapped, workerRoutine_server)){
             if(WSAGetLastError() != WSA_IO_PENDING){
-                resultAdd("WSARecv Failed");
+                resultError("WSARecv Failed.");
                 return;
             }
         }
@@ -161,18 +166,19 @@ void clientTCP(string dest, int  port, int size, int number){
     sharedInfo.running = true;
 
     if(WSAStartup(0x0202,&wsaData) != 0){
-        resultAdd("WSAStartup Failed");
+        resultError("WSAStartup Failed.");
         return;
     }
-    if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
-        resultAdd("WSASocket Failed");
+    if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED))
+            == INVALID_SOCKET){
+        resultError("WSASocket Failed.");
         return;
     }
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     hostent *ent;
     if(!(ent = gethostbyname(dest.c_str()))){
-        resultAdd("could not find hostname");
+        resultError("could not find hostname.");
         return;
     }
 
@@ -180,7 +186,7 @@ void clientTCP(string dest, int  port, int size, int number){
 
     resultAdd("Trying to connect...");
     if(connect(sharedInfo.sharedSocket, (PSOCKADDR)&addr,sizeof(SOCKADDR_IN)) == SOCKET_ERROR){
-        resultAdd("connect Failed");
+        resultError("connect Failed.");
         return;
     }
     resultAdd("Connected.");
@@ -192,18 +198,18 @@ void clientTCP(string dest, int  port, int size, int number){
     memset(sharedInfo.buffer,'a', size);
     int total = number;
     while(sharedInfo.running && number--){//keep sending
+        //increment status bar
+        resultSet((total-number)/total*100);
         DWORD flags = 0;
         sharedInfo.wsabuff.buf = sharedInfo.buffer;
         sharedInfo.wsabuff.len = size;
         if(WSASend(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                    flags, &sharedInfo.overlapped, workerRoutine_client)){
             if(WSAGetLastError() != WSA_IO_PENDING){
-                resultAdd("WSASend Failed");
+                resultError("WSASend Failed.");
                 return;
             }
         }
-        //increment status bar
-        resultSet(number/total*100);
     }
     if(sharedInfo.running)
         resultAdd("Finished.");
@@ -222,18 +228,19 @@ void clientUDP(string dest, int  port, int size, int number){
     sharedInfo.running = true;
 
     if(WSAStartup(0x0202,&wsaData) != 0){
-        resultAdd("WSAStartup Failed");
+        resultError("WSAStartup Failed.");
         return;
     }
-    if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
-        resultAdd("WSASocket Failed");
+    if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_DGRAM,0,0,0,WSA_FLAG_OVERLAPPED))
+            == INVALID_SOCKET){
+        resultError("WSASocket Failed.");
         return;
     }
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     hostent *ent;
     if(!(ent = gethostbyname(dest.c_str()))){
-        resultAdd("could not find hostname");
+        resultAdd("could not find hostname.");
         return;
     }
 
@@ -247,18 +254,19 @@ void clientUDP(string dest, int  port, int size, int number){
     memset(sharedInfo.buffer,'a', size);
     int total = number;
     while(sharedInfo.running && number--){//keep sending
+        //increment status bar
+        resultSet((total-number)/total*100);
         DWORD flags = 0;
         sharedInfo.wsabuff.buf = sharedInfo.buffer;
         sharedInfo.wsabuff.len = size;
-        if(WSASend(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                   flags, &sharedInfo.overlapped, workerRoutine_client)){
+        if(WSASendTo(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
+                     flags, reinterpret_cast<SOCKADDR*>(&addr),sizeof(SOCKADDR_IN),
+                     &sharedInfo.overlapped, workerRoutine_client)){
             if(WSAGetLastError() != WSA_IO_PENDING){
-                resultAdd("WSASend Failed");
+                resultError("WSASend Failed.");
                 return;
             }
         }
-        //increment status bar
-        resultSet(number/total*100);
     }
     if(sharedInfo.running)
         resultAdd("Finished.");
@@ -267,13 +275,24 @@ void clientUDP(string dest, int  port, int size, int number){
 }
 
 void CALLBACK workerRoutine_client(DWORD error, DWORD bytesTrans,
-                                      LPWSAOVERLAPPED overlapped, DWORD inFlags){
+                                   LPWSAOVERLAPPED, DWORD){
     if (error) {
-        resultAdd("Error in WSASend.");
+        if(sharedInfo.running){
+            resultError("Error in WSASend.");
+        }
+        resultAdd("Quitting.");
+        return;
     }
     if(bytesTrans) {
         resultAdd("Data Sent.");
     }
+}
+
+
+void resultError(string msg) {
+    std::stringstream ss;
+    ss << msg << " Error Code " << WSAGetLastError();
+    resultAdd(ss.str());
 }
 
 void resultAdd(string msg) {
