@@ -18,6 +18,7 @@ public:
 
 private slots:
     void messageAdd_slot(std::string);
+    void messageSet_slot(int);
     void messageClear_slot();
 
     void on_pushButtonStart_clicked();

@@ -36,12 +36,13 @@ void MainWindow::on_pushButtonStart_clicked()
             client = std::thread(clientUDP, dest, port, size, number);
         client.detach();
     } else {
+        size = ui->lineEditBuffer->text().toInt();
         //start server
         std::thread server;
         if(ui->comboBoxProto->currentIndex() == 0)
-            server = std::thread(serverTCP, port);
+            server = std::thread(serverTCP, port, size);
         else
-            server = std::thread(serverUDP, port);
+            server = std::thread(serverUDP, port, size);
         server.detach();
     }
 }
@@ -51,6 +52,11 @@ void MainWindow::messageAdd_slot(std::string s){
     ui->textBrowserOutput->append(s.c_str());
 }
 
+void MainWindow::messageSet_slot(int percent){
+    ui->progressBarL->setValue(percent);
+    ui->progressBarR->setValue(percent);
+}
+
 void MainWindow::messageClear_slot(){
     ui->textBrowserOutput->clear();
 }
@@ -58,4 +64,5 @@ void MainWindow::messageClear_slot(){
 void MainWindow::on_pushButtonStop_clicked()
 {
     sharedInfo.running = false;
+    closesocket(sharedInfo.sharedSocket);
 }

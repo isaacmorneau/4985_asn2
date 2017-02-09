@@ -6,28 +6,26 @@
 
 //hack to return info to the gui thread
 void resultAdd(std::string msg);
+void resultSet(int percent);
 void resultClear();
 //the shared pointer for the window
 extern void *mainwindowptr;
 
 //starts server
-void serverTCP(int port);
-void serverUDP(int port);
+void serverTCP(int port, int buffsize);
+void serverUDP(int port, int buffsize);
 //starts client
 void clientTCP(std::string dest, int  port, int size, int number);
 void clientUDP(std::string dest, int  port, int size, int number);
 
 //callback for async events
-void CALLBACK workerRoutine_TCPserver(DWORD error, DWORD bytesTrans,
+void CALLBACK workerRoutine_server(DWORD error, DWORD bytesTrans,
    LPWSAOVERLAPPED overlapped, DWORD inFlags);
 
-void CALLBACK workerRoutine_TCPclient(DWORD error, DWORD bytesTrans,
-   LPWSAOVERLAPPED overlapped, DWORD inFlags);
-
-void CALLBACK workerRoutine_UDPserver(DWORD error, DWORD bytesTrans,
+void CALLBACK workerRoutine_client(DWORD error, DWORD bytesTrans,
    LPWSAOVERLAPPED overlapped, DWORD inFlags);
 //thread for consuming connections
-void workerThread_TCPserver(WSAEVENT event);
+void workerThread_server(WSAEVENT event);
 
 typedef struct _sharedinfo {
     SOCKET sharedSocket;
