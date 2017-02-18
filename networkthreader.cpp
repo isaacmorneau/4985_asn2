@@ -64,7 +64,7 @@ void serverTCP(int port, int buffsize){
             sharedInfo.wsabuff.len = buffsize;
         }
         if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                   &flags, &sharedInfo.overlapped, workerRoutine_server)){
+                   &flags, &sharedInfo.overlapped, workerRoutineTCP_server)){
             if(WSAGetLastError() != WSA_IO_PENDING){
                 closesocket(sharedInfo.sharedSocket);
                 resultAdd("WSARecv Failed");
@@ -110,8 +110,8 @@ void serverUDP(int port, int buffsize){
         sharedInfo.wsabuff.buf = sharedInfo.buffer;
         sharedInfo.wsabuff.len = buffsize;
     }
-    if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-               &flags, &sharedInfo.overlapped, workerRoutine_server)){
+    if(WSARecvFrom(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
+               &flags, 0, 0, &sharedInfo.overlapped, workerRoutineUDP_server)){
         if(WSAGetLastError() != WSA_IO_PENDING){
             closesocket(sharedInfo.sharedSocket);
             resultAdd("WSARecv Failed");
@@ -121,7 +121,7 @@ void serverUDP(int port, int buffsize){
     resultAdd("Waiting for datagram...");
 }
 
-void CALLBACK workerRoutine_server(DWORD error, DWORD bytesTrans,
+void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
                                    LPWSAOVERLAPPED overlapped, DWORD inFlags){
     if(error){
         closesocket(sharedInfo.sharedSocket);
@@ -140,7 +140,35 @@ void CALLBACK workerRoutine_server(DWORD error, DWORD bytesTrans,
     if(sharedInfo.running) {
         DWORD flags = 0;
         if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                   &flags, &sharedInfo.overlapped, workerRoutine_server)){
+                   &flags, &sharedInfo.overlapped, workerRoutineTCP_server)){
+            if(WSAGetLastError() != WSA_IO_PENDING){
+                resultAdd("WSARecv Failed");
+                return;
+            }
+        }
+    }
+}
+
+void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
+                                   LPWSAOVERLAPPED overlapped, DWORD inFlags){
+    if(error){
+        closesocket(sharedInfo.sharedSocket);
+        resultAdd("Error in WSARecv");
+        return;
+    }
+    if (bytesTrans) {
+        resultAdd("== read>");
+        resultAdd(string(sharedInfo.buffer, bytesTrans));
+        resultAdd("== endr>");
+        //save it
+    } else {
+        resultAdd("Nothing to read.");
+    }
+
+    if(sharedInfo.running) {
+        DWORD flags = 0;
+        if(WSARecvFrom(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
+                       &flags, 0, 0, &sharedInfo.overlapped, workerRoutineUDP_server)){
             if(WSAGetLastError() != WSA_IO_PENDING){
                 resultAdd("WSARecv Failed");
                 return;
@@ -253,7 +281,7 @@ void clientUDP(string dest, int  port, int size, int number){
         if(WSASend(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                    flags, &sharedInfo.overlapped, workerRoutine_client)){
             if(WSAGetLastError() != WSA_IO_PENDING){
-                resultAdd("WSASend Failed");
+                resultAdd("WSASend Failed " + WSAGetLastError());
                 return;
             }
         }

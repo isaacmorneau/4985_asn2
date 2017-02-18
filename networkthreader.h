@@ -19,7 +19,9 @@ void clientTCP(std::string dest, int  port, int size, int number);
 void clientUDP(std::string dest, int  port, int size, int number);
 
 //callback for async events
-void CALLBACK workerRoutine_server(DWORD error, DWORD bytesTrans,
+void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
+   LPWSAOVERLAPPED overlapped, DWORD inFlags);
+void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
    LPWSAOVERLAPPED overlapped, DWORD inFlags);
 
 void CALLBACK workerRoutine_client(DWORD error, DWORD bytesTrans,
