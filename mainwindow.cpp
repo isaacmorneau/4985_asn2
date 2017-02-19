@@ -63,6 +63,13 @@ void MainWindow::messageClear_slot(){
 
 void MainWindow::on_pushButtonStop_clicked()
 {
-    sharedInfo.running = false;
+    if(!sharedInfo.running)
+        return;
+    sharedInfo.running= false;
     closesocket(sharedInfo.sharedSocket);
+    //dont leave memory lying about
+    if(sharedInfo.buffer != 0)
+        free(sharedInfo.buffer);
+    sharedInfo.buffer = 0;
+    WSACleanup();
 }

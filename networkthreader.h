@@ -36,8 +36,9 @@ void workerThread_server(WSAEVENT event);
 typedef struct _sharedinfo {
     SOCKET sharedSocket;
     char *buffer;
-    DWORD recvd;
+    int size;
     WSABUF wsabuff;
+    DWORD recvd;
     bool running;
     OVERLAPPED overlapped;
 } sharedinfo;

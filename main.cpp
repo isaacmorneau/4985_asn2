@@ -5,6 +5,9 @@ int main(int argc, char *argv[]){
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
+    //no resize
+    w.setFixedSize(w.size());
+
     //tell qt that if something is called string that it is one
     qRegisterMetaType<std::string>("std::string");
     return a.exec();
