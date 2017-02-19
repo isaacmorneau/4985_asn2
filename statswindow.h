@@ -2,6 +2,8 @@
 #define STATSWINDOW_H
 
 #include <QMainWindow>
+#include <QtCharts>
+#include <QtCharts/QBarSeries>
 
 namespace Ui {
 class StatsWindow;
@@ -17,6 +19,9 @@ public:
 
 private:
     Ui::StatsWindow *ui;
+    QtCharts::QBarSeries *seriesPacket;
+    QtCharts::QBarSeries *seriesSize;
+    QtCharts::QChart *chart;
 };
 
 #endif // STATSWINDOW_H

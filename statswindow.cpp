@@ -14,58 +14,55 @@ QT_CHARTS_USE_NAMESPACE
 
 StatsWindow::StatsWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::StatsWindow)
+    ui(new Ui::StatsWindow),
+    seriesPacket(new QBarSeries),
+    seriesSize(new QBarSeries),
+    chart(new QChart)
 {
     ui->setupUi(this);
 
-    QBarSet *set0 = new QBarSet("Total Packets");
-    QBarSet *set1 = new QBarSet("Packets Lost");
-    QBarSet *set2 = new QBarSet("Amount Transfer");
+    QBarSet *setTotal = new QBarSet("Total Packets");
+    QBarSet *setLost = new QBarSet("Packets Lost");
+    QBarSet *setSize = new QBarSet("Amount Transfer");
 
     QStringList categories;
 
     //get actual test data here and build the sets out of it
 
-    //size
-    *set2 << 200 << 350 << 500 << 1000 << 460 << 210;
-    //packets
-    *set0 << 10 << 30 << 60 << 100 << 40 << 20;
-    *set1 << 0 << 1 << 3 << 8 << 2 << 1;
-
+    *setSize << 200 << 350 << 500 << 1000 << 460 << 210;
+    *setTotal << 10 << 30 << 60 << 100 << 40 << 20;
+    *setLost << 0 << 1 << 3 << 8 << 2 << 1;
 
     categories << "Test 1" << "Test 2" << "Test 3" << "Test 4" << "Test 5";
 
-    QBarSeries *series0 = new QBarSeries;
-    QBarSeries *series1 = new QBarSeries;
-    QChart *chart = new QChart();
     chart->setTitle("Test Result Stats");
     chart->setAnimationOptions(QChart::SeriesAnimations);
 
-    QValueAxis *axisY0 = new QValueAxis;
-    QValueAxis *axisY1 = new QValueAxis;
+    QValueAxis *axisYPacket = new QValueAxis;
+    QValueAxis *axisYSize = new QValueAxis;
     QBarCategoryAxis *axisX = new QBarCategoryAxis;
 
-    series1->append(set2);
-    series0->append(set0);
-    series0->append(set1);
+    seriesSize->append(setSize);
+    seriesPacket->append(setTotal);
+    seriesPacket->append(setLost);
 
     //size first
-    chart->addSeries(series1);
+    chart->addSeries(seriesSize);
     //then packets
-    chart->addSeries(series0);
+    chart->addSeries(seriesPacket);
 
     axisX->append(categories);
     chart->addAxis(axisX, Qt::AlignBottom);
-    axisY1->setTitleText("Transfer Size");
-    chart->addAxis(axisY1, Qt::AlignLeft);
-    axisY0->setTitleText("Number of Packets");
-    chart->addAxis(axisY0, Qt::AlignRight);
+    axisYSize->setTitleText("Transfer Size");
+    chart->addAxis(axisYSize, Qt::AlignLeft);
+    axisYPacket->setTitleText("Number of Packets");
+    chart->addAxis(axisYPacket, Qt::AlignRight);
 
-    series1->attachAxis(axisX);
-    series1->attachAxis(axisY1);
+    seriesSize->attachAxis(axisX);
+    seriesSize->attachAxis(axisYSize);
 
-    series0->attachAxis(axisX);
-    series0->attachAxis(axisY0);
+    seriesPacket->attachAxis(axisX);
+    seriesPacket->attachAxis(axisYPacket);
 
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
@@ -79,4 +76,5 @@ StatsWindow::StatsWindow(QWidget *parent) :
 StatsWindow::~StatsWindow()
 {
     delete ui;
+    //dont delete the other QtChart pointers, they will be removed by qt
 }
