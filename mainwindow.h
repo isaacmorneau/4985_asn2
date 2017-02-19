@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <string>
+#include "statswindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -32,11 +33,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    //the stupid way that qt generates the files means
-    //that if i try and make this an actual Ui::StatsWindow
-    //the linker cannot complete the type
-    //void *stats;
-    void *stats;
+    //dont add Ui namespace, everything will break
+    StatsWindow *stats;
 };
 
 #endif // MAINWINDOW_H

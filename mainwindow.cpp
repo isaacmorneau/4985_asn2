@@ -9,7 +9,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    stats(0)
+    stats(new StatsWindow)
 {
     ui->setupUi(this);
     //to facilitate the hack for sending data to the window
@@ -19,8 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
-    if(stats)
-        delete static_cast<StatsWindow*>(stats);
+    delete stats;
 }
 
 void MainWindow::on_pushButtonStart_clicked()
@@ -81,13 +80,9 @@ void MainWindow::on_pushButtonStop_clicked()
 
 void MainWindow::on_checkBoxStats_clicked()
 {
-    if(!stats)
-        stats = new StatsWindow();
-    //it refuses to regcognize the type for use as a member
-    StatsWindow *stat = static_cast<StatsWindow*>(stats);
     if(ui->checkBoxStats->isChecked()) {
-        stat->show();
+        stats->show();
     } else {
-        stat->hide();
+        stats->hide();
     }
 }
