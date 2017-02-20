@@ -31,6 +31,8 @@ private slots:
 
     void on_checkBoxStats_clicked();
 
+    void on_pushButtonResetTest_clicked();
+
 private:
     Ui::MainWindow *ui;
     //dont add Ui namespace, everything will break

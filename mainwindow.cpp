@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "statswindow.h"
+#include "testset.h"
 #include <string>
 #include <thread>
 
@@ -22,8 +23,32 @@ MainWindow::~MainWindow()
     delete stats;
 }
 
+void MainWindow::messageAdd_slot(std::string s){
+    //make text appened on a new line
+    ui->textBrowserOutput->append(s.c_str());
+}
+
+void MainWindow::messageSet_slot(int percent){
+    ui->progressBarL->setValue(percent);
+    ui->progressBarR->setValue(percent);
+}
+
+void MainWindow::messageClear_slot(){
+    ui->textBrowserOutput->clear();
+}
+
 void MainWindow::on_pushButtonStart_clicked()
 {
+    ui->pushButtonStart->setEnabled(false);
+    ui->pushButtonStop->setEnabled(true);
+
+    //everything needs this so do it before starting them
+    WSADATA wsaData;
+    if(WSAStartup(0x0202,&wsaData) != 0){
+        resultError("WSAStartup Failed.");
+        return;
+    }
+
     std::string dest;
     int port, size, number;
 
@@ -51,22 +76,10 @@ void MainWindow::on_pushButtonStart_clicked()
     }
 }
 
-void MainWindow::messageAdd_slot(std::string s){
-    //make text appened on a new line
-    ui->textBrowserOutput->append(s.c_str());
-}
-
-void MainWindow::messageSet_slot(int percent){
-    ui->progressBarL->setValue(percent);
-    ui->progressBarR->setValue(percent);
-}
-
-void MainWindow::messageClear_slot(){
-    ui->textBrowserOutput->clear();
-}
-
 void MainWindow::on_pushButtonStop_clicked()
 {
+    ui->pushButtonStart->setEnabled(true);
+    ui->pushButtonStop->setEnabled(false);
     if(!sharedInfo.running)
         return;
     sharedInfo.running= false;
@@ -75,14 +88,23 @@ void MainWindow::on_pushButtonStop_clicked()
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
     sharedInfo.buffer = 0;
-    WSACleanup();
+
+    if(WSACleanup() != 0){
+        resultError("WSACleanup Failed.");
+    }
 }
 
 void MainWindow::on_checkBoxStats_clicked()
 {
     if(ui->checkBoxStats->isChecked()) {
+        QMetaObject().invokeMethod(stats, "updateData");
         stats->show();
     } else {
         stats->hide();
     }
+}
+
+void MainWindow::on_pushButtonResetTest_clicked()
+{
+   TestSet::getTestSets()->clear();
 }

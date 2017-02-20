@@ -8,6 +8,7 @@
 
 #include "networkthreader.h"
 #include "mainwindow.h"
+#include "testset.h"
 
 void *mainwindowptr;
 
@@ -19,7 +20,6 @@ sharedinfo sharedInfo{};
 void serverTCP(int port, int buffsize){
     resultClear();
     resultAdd("Starting TCP Server.");
-    WSADATA wsaData;
     SOCKADDR_IN addr;
     SOCKET tempSock;
 
@@ -27,10 +27,6 @@ void serverTCP(int port, int buffsize){
 
     sharedInfo.running = true;
 
-    if(WSAStartup(0x0202,&wsaData) != 0){
-        resultAdd("WSAStartup Failed.");
-        return;
-    }
     if((tempSock = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
         resultError("WSASocket Failed.");
         return;
@@ -59,6 +55,8 @@ void serverTCP(int port, int buffsize){
             return;
         }
         resultAdd("Connected.");
+    auto test = TestSet::getTestSets();
+    test->newTest();
         DWORD flags = 0;
         if(sharedInfo.buffer == 0){
             sharedInfo.buffer = static_cast<char*>(malloc(buffsize * sizeof(char)));
@@ -85,17 +83,12 @@ void serverTCP(int port, int buffsize){
 void serverUDP(int port, int buffsize){
     resultClear();
     resultAdd("Starting UDP Server.");
-    WSADATA wsaData;
     SOCKADDR_IN addr;
 
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
 
     sharedInfo.running = true;
 
-    if(WSAStartup(0x0202,&wsaData) != 0){
-        resultError("WSAStartup Failed.");
-        return;
-    }
     if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_DGRAM,0,0,0,WSA_FLAG_OVERLAPPED))
             == INVALID_SOCKET){
         resultError("WSASocket Failed.");
@@ -118,6 +111,8 @@ void serverUDP(int port, int buffsize){
         sharedInfo.wsabuff.buf = sharedInfo.buffer;
         sharedInfo.wsabuff.len = buffsize;
     }
+    auto test = TestSet::getTestSets();
+    test->newTest();
     if(WSARecvFrom(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                    &flags, 0, 0, &sharedInfo.overlapped, workerRoutineUDP_server)){
         if(WSAGetLastError() != WSA_IO_PENDING){
@@ -150,11 +145,16 @@ void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
     }
 
     if (bytesTrans) {
+        auto test = TestSet::getTestSets();
+        test->addToTest(1,0,bytesTrans);
         resultAdd("read " + to_string(bytesTrans));
         //resultAdd(string(sharedInfo.buffer, bytesTrans));
         //save it
     } else {
-        resultAdd("Nothing to read.");
+        resultAdd("Connection closed.");
+        //auto t = TestSet::getTestSets();
+        //t->newTest();
+        return;
     }
 
     if(sharedInfo.running) {
@@ -191,11 +191,14 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
         //fall through and process the first part of the message first
     case 0://no error
         if (bytesTrans) {
+            auto test = TestSet::getTestSets();
+            test->addToTest(1,0,bytesTrans);
             resultAdd("read " + to_string(bytesTrans));
             //resultAdd(string(sharedInfo.buffer, bytesTrans));
             //save it
         } else {
             resultAdd("Nothing to read.");
+            return;
         }
 
         if(sharedInfo.running) {
@@ -223,17 +226,12 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
 void clientTCP(string dest, int  port, int size, int number){
     resultClear();
     resultAdd("Starting TCP Client.");
-    WSADATA wsaData;
     SOCKADDR_IN addr;
 
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
 
     sharedInfo.running = true;
 
-    if(WSAStartup(0x0202,&wsaData) != 0){
-        resultError("WSAStartup Failed.");
-        return;
-    }
     if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED))
             == INVALID_SOCKET){
         resultError("WSASocket Failed.");
@@ -256,6 +254,8 @@ void clientTCP(string dest, int  port, int size, int number){
     }
     resultAdd("Connected.");
     resultAdd("Sending...");
+    auto test = TestSet::getTestSets();
+    test->newTest();
     if(sharedInfo.buffer != 0){
         free(sharedInfo.buffer);
     }
@@ -274,6 +274,9 @@ void clientTCP(string dest, int  port, int size, int number){
                 return;
             }
         }
+
+        auto test = TestSet::getTestSets();
+        test->addToTest(1, 0, size);
         //increment status bar
         resultSet(double(total - number) / 100 * total);
     }
@@ -289,17 +292,12 @@ void clientTCP(string dest, int  port, int size, int number){
 void clientUDP(string dest, int  port, int size, int number){
     resultClear();
     resultAdd("Starting UDP Client.");
-    WSADATA wsaData;
     SOCKADDR_IN addr;
 
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
 
     sharedInfo.running = true;
 
-    if(WSAStartup(0x0202,&wsaData) != 0){
-        resultError("WSAStartup Failed.");
-        return;
-    }
     if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_DGRAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
         resultError("WSASocket Failed");
         return;
@@ -315,6 +313,8 @@ void clientUDP(string dest, int  port, int size, int number){
     memcpy((char *)&addr.sin_addr, ent->h_addr, ent->h_length);
 
     resultAdd("Sending...");
+    auto test = TestSet::getTestSets();
+    test->newTest();
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
     sharedInfo.buffer = static_cast<char*>(malloc(size * sizeof(char)));
@@ -326,22 +326,22 @@ void clientUDP(string dest, int  port, int size, int number){
     while(sharedInfo.running && number--){//keep sending
         if(WSASendTo(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                      0, (PSOCKADDR)&addr, sizeof(SOCKADDR_IN), &sharedInfo.overlapped, workerRoutine_client)){
-            int err = WSAGetLastError();
-            if(err != WSA_IO_PENDING && err != ERROR_SUCCESS){
+            if(WSAGetLastError() != WSA_IO_PENDING){
                 resultError("WSASendTo Failed");
                 return;
             }
         }
+
+        auto test = TestSet::getTestSets();
+        test->addToTest(1, 0, size);
         //increment status bar
-        resultSet(double(total - number) / 100 * total);
+        int tmp = (double(total - number) / total) * 100;
+        resultSet(tmp);
     }
     if(sharedInfo.running)
         resultAdd("Finished.");
     else
         resultAdd("Stopped.");
-    //dont leave memory lying about
-    //if(sharedInfo.buffer != 0)
-    //    free(sharedInfo.buffer);
 }
 
 void CALLBACK workerRoutine_client(DWORD error, DWORD, LPWSAOVERLAPPED, DWORD){
@@ -361,17 +361,17 @@ void resultError(string msg) {
 
 void resultAdd(string msg) {
     QMetaObject qtmo;
-    qtmo.invokeMethod(reinterpret_cast<MainWindow*>(mainwindowptr),
+    qtmo.invokeMethod(static_cast<MainWindow*>(mainwindowptr),
                       "messageAdd_slot", Q_ARG(std::string, msg));
 }
 
 void resultSet(int percent) {
     QMetaObject qtmo;
-    qtmo.invokeMethod(reinterpret_cast<MainWindow*>(mainwindowptr),
+    qtmo.invokeMethod(static_cast<MainWindow*>(mainwindowptr),
                       "messageSet_slot", Q_ARG(int, percent));
 }
 
 void resultClear() {
     QMetaObject qtmo;
-    qtmo.invokeMethod(reinterpret_cast<MainWindow*>(mainwindowptr), "messageClear_slot");
+    qtmo.invokeMethod(static_cast<MainWindow*>(mainwindowptr), "messageClear_slot");
 }

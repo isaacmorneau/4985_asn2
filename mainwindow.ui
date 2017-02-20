@@ -78,7 +78,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>1000</string>
+      <string>10</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_5">
@@ -265,8 +265,8 @@
    <widget class="QPushButton" name="pushButtonStart">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>310</y>
+      <x>610</x>
+      <y>40</y>
       <width>81</width>
       <height>28</height>
      </rect>
@@ -318,16 +318,19 @@
      <rect>
       <x>290</x>
       <y>40</y>
-      <width>401</width>
+      <width>301</width>
       <height>261</height>
      </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButtonStop">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
-      <x>490</x>
-      <y>310</y>
+      <x>610</x>
+      <y>80</y>
       <width>81</width>
       <height>28</height>
      </rect>
@@ -339,14 +342,27 @@
    <widget class="QCheckBox" name="checkBoxStats">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>310</y>
+      <x>610</x>
+      <y>120</y>
       <width>72</width>
       <height>19</height>
      </rect>
     </property>
     <property name="text">
      <string>Show Stats</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonResetTest">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>150</y>
+      <width>81</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Reset Tests</string>
     </property>
    </widget>
   </widget>

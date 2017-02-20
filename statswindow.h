@@ -16,12 +16,11 @@ class StatsWindow : public QMainWindow
 public:
     explicit StatsWindow(QWidget *parent = 0);
     ~StatsWindow();
+private slots:
+    void updateData();
 
 private:
     Ui::StatsWindow *ui;
-    QtCharts::QBarSeries *seriesPacket;
-    QtCharts::QBarSeries *seriesSize;
-    QtCharts::QChart *chart;
 };
 
 #endif // STATSWINDOW_H

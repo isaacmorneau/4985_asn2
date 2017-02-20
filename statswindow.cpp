@@ -1,6 +1,3 @@
-#include "statswindow.h"
-#include "ui_statswindow.h"
-
 #include <QtCharts>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
@@ -9,49 +6,55 @@
 #include <QtCharts/QBarSet>
 #include <QtCharts/QLegend>
 #include <QtCharts/QBarCategoryAxis>
+#include <string>
+
+#include "statswindow.h"
+#include "ui_statswindow.h"
+#include "testset.h"
 
 QT_CHARTS_USE_NAMESPACE
 
 StatsWindow::StatsWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::StatsWindow),
-    seriesPacket(new QBarSeries),
-    seriesSize(new QBarSeries),
-    chart(new QChart)
+    ui(new Ui::StatsWindow)
 {
     ui->setupUi(this);
+    setWindowFlags(Qt::WindowTitleHint);
+}
+
+void StatsWindow::updateData(){
+    QValueAxis *axisYPacket = new QValueAxis;
+    QValueAxis *axisYSize = new QValueAxis;
+    QBarCategoryAxis *axisX = new QBarCategoryAxis;
+    QtCharts::QBarSeries *seriesPacket = new QBarSeries;
+    QtCharts::QBarSeries *seriesSize = new QBarSeries;
+    QtCharts::QChart *chart = new QChart;
 
     QBarSet *setTotal = new QBarSet("Total Packets");
     QBarSet *setLost = new QBarSet("Packets Lost");
     QBarSet *setSize = new QBarSet("Amount Transfer");
 
-    QStringList categories;
-
-    //get actual test data here and build the sets out of it
-
-    *setSize << 200 << 350 << 500 << 1000 << 460 << 210;
-    *setTotal << 10 << 30 << 60 << 100 << 40 << 20;
-    *setLost << 0 << 1 << 3 << 8 << 2 << 1;
-
-    categories << "Test 1" << "Test 2" << "Test 3" << "Test 4" << "Test 5";
-
-    chart->setTitle("Test Result Stats");
-    chart->setAnimationOptions(QChart::SeriesAnimations);
-
-    QValueAxis *axisYPacket = new QValueAxis;
-    QValueAxis *axisYSize = new QValueAxis;
-    QBarCategoryAxis *axisX = new QBarCategoryAxis;
+    auto tests = TestSet::getTestSets();
+    tests->extractSets(setTotal,setLost,setSize);
 
     seriesSize->append(setSize);
     seriesPacket->append(setTotal);
     seriesPacket->append(setLost);
+
+    QStringList categories;
+    int sz = tests->size();
+    for(int i = 0; i < sz; ++i)
+        categories.append(("Test " + std::to_string(i)).c_str());
+    axisX->append(categories);
+
+    chart->setTitle("Test Result Stats");
+    chart->setAnimationOptions(QChart::SeriesAnimations);
 
     //size first
     chart->addSeries(seriesSize);
     //then packets
     chart->addSeries(seriesPacket);
 
-    axisX->append(categories);
     chart->addAxis(axisX, Qt::AlignBottom);
     axisYSize->setTitleText("Transfer Size");
     chart->addAxis(axisYSize, Qt::AlignLeft);
