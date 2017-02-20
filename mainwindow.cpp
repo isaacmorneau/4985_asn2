@@ -1,4 +1,5 @@
 #include "networkthreader.h"
+#include "wrappers.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "statswindow.h"
@@ -67,15 +68,9 @@ void MainWindow::messageClear_slot(){
 
 void MainWindow::on_pushButtonStop_clicked()
 {
-    if(!sharedInfo.running)
+    if(!WSAWrap::running())
         return;
-    sharedInfo.running= false;
-    closesocket(sharedInfo.sharedSocket);
-    //dont leave memory lying about
-    if(sharedInfo.buffer != 0)
-        free(sharedInfo.buffer);
-    sharedInfo.buffer = 0;
-    WSACleanup();
+    WSAWrap::stop();
 }
 
 void MainWindow::on_checkBoxStats_clicked()

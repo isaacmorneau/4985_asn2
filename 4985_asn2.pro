@@ -26,11 +26,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     networkthreader.cpp \
-    statswindow.cpp
+    statswindow.cpp \
+    wrappers.cpp
 
 HEADERS  += mainwindow.h \
     networkthreader.h \
-    statswindow.h
+    statswindow.h \
+    wrappers.h
 
 FORMS    += mainwindow.ui \
     statswindow.ui

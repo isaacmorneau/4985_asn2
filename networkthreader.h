@@ -4,17 +4,6 @@
 #include <windows.h>
 #include <string>
 
-//hack to return info to the gui thread
-void resultAdd(std::string msg);
-//wapper for resultAdd that adds WSAGetLastError code to message
-void resultError(std::string msg);
-//set progress bars
-void resultSet(int percent);
-//clear output window
-void resultClear();
-//the shared pointer for the window
-extern void *mainwindowptr;
-
 //starts server
 void serverTCP(int port, int buffsize);
 void serverUDP(int port, int buffsize);
@@ -22,27 +11,5 @@ void serverUDP(int port, int buffsize);
 void clientTCP(std::string dest, int  port, int size, int number);
 void clientUDP(std::string dest, int  port, int size, int number);
 
-//callback for async events
-void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
-   LPWSAOVERLAPPED overlapped, DWORD inFlags);
-void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
-   LPWSAOVERLAPPED overlapped, DWORD inFlags);
-
-void CALLBACK workerRoutine_client(DWORD error, DWORD bytesTrans,
-   LPWSAOVERLAPPED overlapped, DWORD inFlags);
-//thread for consuming connections
-void workerThread_server(WSAEVENT event);
-
-typedef struct _sharedinfo {
-    SOCKET sharedSocket;
-    char *buffer;
-    int size;
-    WSABUF wsabuff;
-    DWORD recvd;
-    bool running;
-    OVERLAPPED overlapped;
-} sharedinfo;
-
-extern sharedinfo sharedInfo;
-
+extern bool running;
 #endif // NETWORKINGTHREADER_H
