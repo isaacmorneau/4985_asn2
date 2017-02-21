@@ -14,11 +14,6 @@
    <string>Stats</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
-  <action name="actionRefresh">
-   <property name="text">
-    <string>Refresh</string>
-   </property>
-  </action>
  </widget>
  <resources/>
  <connections/>

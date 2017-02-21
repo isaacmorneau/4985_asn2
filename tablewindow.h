@@ -1,13 +1,13 @@
 #ifndef TABLEWINDOW_H
 #define TABLEWINDOW_H
 
-#include <QDialog>
+#include <QMainWindow>
 
 namespace Ui {
 class TableWindow;
 }
 
-class TableWindow : public QDialog
+class TableWindow : public QMainWindow
 {
     Q_OBJECT
 

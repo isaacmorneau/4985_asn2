@@ -4,17 +4,6 @@
 #include <windows.h>
 #include <string>
 
-//hack to return info to the gui thread
-void resultAdd(std::string msg);
-//wapper for resultAdd that adds WSAGetLastError code to message
-void resultError(std::string msg);
-//set progress bars
-void resultSet(int percent);
-//clear output window
-void resultClear();
-//the shared pointer for the window
-extern void *mainwindowptr;
-
 //starts server
 void serverTCP(int port, int buffsize);
 void serverUDP(int port, int buffsize);

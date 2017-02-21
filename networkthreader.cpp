@@ -1,16 +1,13 @@
+#include "networkthreader.h"
+#include "wrapper.h"
+#include "mainwindow.h"
+#include "testset.h"
+
 #include <thread>
-#include <QMetaObject>
 #include <string>
 #include <winsock2.h>
 #include <windows.h>
 #include <stdio.h>
-#include <sstream>
-
-#include "networkthreader.h"
-#include "mainwindow.h"
-#include "testset.h"
-
-void *mainwindowptr;
 
 using namespace std;
 //starts server
@@ -18,61 +15,65 @@ using namespace std;
 sharedinfo sharedInfo{};
 
 void serverTCP(int port, int buffsize){
+    //initialize the data
     resultClear();
     resultAdd("Starting TCP Server.");
     SOCKADDR_IN addr;
     SOCKET tempSock;
-
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
-
     sharedInfo.running = true;
 
+    //create the socket for listening
     if((tempSock = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
         resultError("WSASocket Failed.");
         return;
     }
+    //bind to it
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     addr.sin_port = htons(port);
-
     if(bind(tempSock, (PSOCKADDR)&addr,sizeof(SOCKADDR_IN)) == SOCKET_ERROR){
         resultError("bind Failed.");
         return;
     }
-
+    //start listening
     if(listen(tempSock, 5)){
         resultError("listen Failed.");
         return;
     }
 
-    //add checkbox for whether or not to loop for new connections
-    while(sharedInfo.running){//accept connections one after another
-        resultAdd("Waiting for connection...");
-        if((sharedInfo.sharedSocket = accept(tempSock,0,0)) == INVALID_SOCKET){
-            if(WSAGetLastError() == WSAEINTR)
-                return;
-            resultError("accept Failed.");
-            return;
-        }
-        resultAdd("Connected.");
+    //
+    resultAdd("Waiting for connection...");
+    if(!asyncAccept(tempSock, &sharedInfo.sharedSocket))
+        return;
+    resultAdd("Connected.");
+
     auto test = TestSet::getTestSets();
     test->newTest("TCP");
-        DWORD flags = 0;
-        if(sharedInfo.buffer == 0){
-            sharedInfo.buffer = static_cast<char*>(malloc(buffsize * sizeof(char)));
-            sharedInfo.size = buffsize;
-            sharedInfo.wsabuff.buf = sharedInfo.buffer;
-            sharedInfo.wsabuff.len = buffsize;
-        }
-        if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                   &flags, &sharedInfo.overlapped, workerRoutineTCP_server)){
-            if(WSAGetLastError() != WSA_IO_PENDING){
-                closesocket(sharedInfo.sharedSocket);
-                resultError("WSARecv Failed.");
-                return;
-            }
+
+    DWORD flags = 0;
+    if(sharedInfo.buffer == 0){
+        sharedInfo.buffer = static_cast<char*>(malloc(buffsize * sizeof(char)));
+        sharedInfo.size = buffsize;
+        sharedInfo.wsabuff.buf = sharedInfo.buffer;
+        sharedInfo.wsabuff.len = buffsize;
+    }
+    //register the completion routine
+    if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
+               &flags, &sharedInfo.overlapped, workerRoutineTCP_server)){
+        if(WSAGetLastError() != WSA_IO_PENDING){
+            closesocket(sharedInfo.sharedSocket);
+            resultError("WSARecv Failed.");
+            return;
         }
     }
+
+    //windows will not run the callback unless the thread is alertable
+    //the thread can only be signaled as alertable with a SleepEx
+    //its in a loop so that when a callback is triggered it will again wait
+    while(sharedInfo.running)
+        if(SleepEx(INFINITE,true) != WAIT_IO_COMPLETION)
+            break;//something other than a callback woke us
     //dont leave memory lying about
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
@@ -81,14 +82,14 @@ void serverTCP(int port, int buffsize){
 
 
 void serverUDP(int port, int buffsize){
+    //initialize the data
     resultClear();
     resultAdd("Starting UDP Server.");
     SOCKADDR_IN addr;
-
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
-
     sharedInfo.running = true;
 
+    //create the socket
     if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_DGRAM,0,0,0,WSA_FLAG_OVERLAPPED))
             == INVALID_SOCKET){
         resultError("WSASocket Failed.");
@@ -98,12 +99,12 @@ void serverUDP(int port, int buffsize){
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     addr.sin_port = htons(port);
 
+    //bind to the address
     if(bind(sharedInfo.sharedSocket, (PSOCKADDR)&addr,sizeof(SOCKADDR_IN)) == SOCKET_ERROR){
         resultError("bind Failed.");
         return;
     }
 
-    //add checkbox for whether or not to loop for new connections
     DWORD flags = MSG_PARTIAL;
     if(sharedInfo.buffer == 0){
         sharedInfo.buffer = static_cast<char*>(malloc(buffsize * sizeof(char)));
@@ -113,6 +114,7 @@ void serverUDP(int port, int buffsize){
     }
     auto test = TestSet::getTestSets();
     test->newTest("UDP");
+    //register the completion routine
     if(WSARecvFrom(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                    &flags, 0, 0, &sharedInfo.overlapped, workerRoutineUDP_server)){
         if(WSAGetLastError() != WSA_IO_PENDING){
@@ -148,7 +150,6 @@ void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
         auto test = TestSet::getTestSets();
         test->addToTest(1,0,bytesTrans);
         resultAdd("read " + to_string(bytesTrans));
-        //resultAdd(string(sharedInfo.buffer, bytesTrans));
         //save it
     } else {
         resultAdd("Connection closed.");
@@ -173,7 +174,7 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
     switch(error){
     case WSAEMSGSIZE:
         resultAdd("The buffer is not large enough!");
-        resultAdd("Auto increasing...");
+        resultAdd("Auto doubling...");
         sharedInfo.size *= 2;
         if((temp = reinterpret_cast<char*>(realloc(sharedInfo.buffer, sharedInfo.size * sizeof(char)))) != 0){
             sharedInfo.buffer = temp;
@@ -192,13 +193,13 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
             auto test = TestSet::getTestSets();
             test->addToTest(1,0,bytesTrans);
             resultAdd("read " + to_string(bytesTrans));
-            //resultAdd(string(sharedInfo.buffer, bytesTrans));
             //save it
         } else {
             resultAdd("Nothing to read.");
             return;
         }
 
+        //only reregister if its still running
         if(sharedInfo.running) {
             DWORD flags = MSG_PARTIAL;
             if(WSARecvFrom(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
@@ -222,19 +223,21 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
 
 //starts client
 void clientTCP(string dest, int  port, int size, int number){
+    //initialize the data
     resultClear();
     resultAdd("Starting TCP Client.");
     SOCKADDR_IN addr;
-
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
-
     sharedInfo.running = true;
 
+    //create the socket
     if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED))
             == INVALID_SOCKET){
         resultError("WSASocket Failed.");
         return;
     }
+
+    //get the ip
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     hostent *ent;
@@ -242,29 +245,31 @@ void clientTCP(string dest, int  port, int size, int number){
         resultError("could not find hostname.");
         return;
     }
-
     memcpy((char *)&addr.sin_addr, ent->h_addr, ent->h_length);
 
+    //connect with async and a wait
     resultAdd("Trying to connect...");
-    if(connect(sharedInfo.sharedSocket, (PSOCKADDR)&addr,sizeof(SOCKADDR_IN)) == SOCKET_ERROR){
-        resultError("connect Failed.");
+    if(!asyncConnect(&sharedInfo.sharedSocket,(PSOCKADDR)&addr))
         return;
-    }
     resultAdd("Connected.");
+
     resultAdd("Sending...");
     auto test = TestSet::getTestSets();
     test->newTest("TCP");
+
     if(sharedInfo.buffer != 0){
         free(sharedInfo.buffer);
     }
     sharedInfo.buffer = static_cast<char*>(malloc(size * sizeof(char)));
     sharedInfo.size = size;
+    //read from file
     memset(sharedInfo.buffer,'a', size);
     int total = number;
     while(sharedInfo.running && number--){//keep sending
         DWORD flags = 0;
         sharedInfo.wsabuff.buf = sharedInfo.buffer;
         sharedInfo.wsabuff.len = size;
+        //register sender completion routine
         if(WSASend(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                    flags, &sharedInfo.overlapped, workerRoutine_client)){
             if(WSAGetLastError() != WSA_IO_PENDING){
@@ -288,18 +293,20 @@ void clientTCP(string dest, int  port, int size, int number){
 }
 
 void clientUDP(string dest, int  port, int size, int number){
+    //initialize
     resultClear();
     resultAdd("Starting UDP Client.");
     SOCKADDR_IN addr;
-
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
-
     sharedInfo.running = true;
 
+    //create the socket
     if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_DGRAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
         resultError("WSASocket Failed");
         return;
     }
+
+    //get the ip
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     hostent *ent;
@@ -307,12 +314,12 @@ void clientUDP(string dest, int  port, int size, int number){
         resultAdd("could not find hostname.");
         return;
     }
-
     memcpy((char *)&addr.sin_addr, ent->h_addr, ent->h_length);
 
     resultAdd("Sending...");
     auto test = TestSet::getTestSets();
     test->newTest("UDP");
+
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
     sharedInfo.buffer = static_cast<char*>(malloc(size * sizeof(char)));
@@ -321,7 +328,9 @@ void clientUDP(string dest, int  port, int size, int number){
     sharedInfo.wsabuff.buf = sharedInfo.buffer;
     sharedInfo.wsabuff.len = size;
     int total = number;
+
     while(sharedInfo.running && number--){//keep sending
+        //register the sender completion routine
         if(WSASendTo(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                      0, (PSOCKADDR)&addr, sizeof(SOCKADDR_IN), &sharedInfo.overlapped, workerRoutine_client)){
             if(WSAGetLastError() != WSA_IO_PENDING){
@@ -349,26 +358,4 @@ void CALLBACK workerRoutine_client(DWORD error, DWORD, LPWSAOVERLAPPED, DWORD){
         resultAdd("Quitting.");
         return;
     }
-}
-
-
-void resultError(string msg) {
-    resultAdd((msg + " Error Code " + to_string(WSAGetLastError())).c_str());
-}
-
-void resultAdd(string msg) {
-    QMetaObject qtmo;
-    qtmo.invokeMethod(static_cast<MainWindow*>(mainwindowptr),
-                      "messageAdd_slot", Q_ARG(std::string, msg));
-}
-
-void resultSet(int percent) {
-    QMetaObject qtmo;
-    qtmo.invokeMethod(static_cast<MainWindow*>(mainwindowptr),
-                      "messageSet_slot", Q_ARG(int, percent));
-}
-
-void resultClear() {
-    QMetaObject qtmo;
-    qtmo.invokeMethod(static_cast<MainWindow*>(mainwindowptr), "messageClear_slot");
 }

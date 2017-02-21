@@ -1,7 +1,8 @@
-#include "networkthreader.h"
+#include "wrapper.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "statswindow.h"
+#include "networkthreader.h"
 #include "testset.h"
 #include <QDialog>
 #include <string>

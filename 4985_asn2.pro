@@ -28,13 +28,15 @@ SOURCES += main.cpp\
     networkthreader.cpp \
     statswindow.cpp \
     testset.cpp \
-    tablewindow.cpp
+    tablewindow.cpp \
+    wrapper.cpp
 
 HEADERS  += mainwindow.h \
     networkthreader.h \
     statswindow.h \
     testset.h \
-    tablewindow.h
+    tablewindow.h \
+    wrapper.h
 
 FORMS    += mainwindow.ui \
     statswindow.ui \

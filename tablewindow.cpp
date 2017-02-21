@@ -6,7 +6,7 @@
 #include <string>
 
 TableWindow::TableWindow(QWidget *parent) :
-    QDialog(parent),
+    QMainWindow(parent),
     ui(new Ui::TableWindow)
 {
     ui->setupUi(this);
