@@ -3,6 +3,7 @@
 #include "ui_mainwindow.h"
 #include "statswindow.h"
 #include "testset.h"
+#include <QDialog>
 #include <string>
 #include <thread>
 
@@ -30,7 +31,6 @@ void MainWindow::messageAdd_slot(std::string s){
 
 void MainWindow::messageSet_slot(int percent){
     ui->progressBarL->setValue(percent);
-    ui->progressBarR->setValue(percent);
 }
 
 void MainWindow::messageClear_slot(){
@@ -52,11 +52,11 @@ void MainWindow::on_pushButtonStart_clicked()
     std::string dest;
     int port, size, number;
 
-    port = ui->lineEditPort->text().toInt();
-    //client specific
-    if(ui->comboBoxMode->currentIndex() == 0){
+    if(ui->tabClientServer->currentIndex() == 0){//client
+        port = ui->lineEditPortClient->text().toInt();
         dest = ui->lineEditDestination->text().toStdString();
         size = ui->lineEditPacketSize->text().toInt();
+        //file or junk
         number = ui->lineEditPacketNum->text().toInt();
         std::thread client;
         if(ui->comboBoxProto->currentIndex() == 0)
@@ -64,7 +64,9 @@ void MainWindow::on_pushButtonStart_clicked()
         else
             client = std::thread(clientUDP, dest, port, size, number);
         client.detach();
-    } else {
+    } else {//server
+        port = ui->lineEditPortServer->text().toInt();
+
         size = ui->lineEditBuffer->text().toInt();
         //start server
         std::thread server;
@@ -107,4 +109,18 @@ void MainWindow::on_checkBoxStats_clicked()
 void MainWindow::on_pushButtonResetTest_clicked()
 {
    TestSet::getTestSets()->clear();
+}
+
+void MainWindow::on_pushButtonClientFile_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open File"), "", tr("All Files (*.*)"));
+    ui->lineEditFileNameClient->setText(fileName);
+}
+
+void MainWindow::on_pushButtonServerFile_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open File"), "", tr("All Files (*.*)"));
+    ui->lineEditFileNameServer->setText(fileName);
 }

@@ -44,7 +44,7 @@ void StatsWindow::updateData(){
     QStringList categories;
     int sz = tests->size();
     for(int i = 0; i < sz; ++i)
-        categories.append(("Test " + std::to_string(i)).c_str());
+        categories.append(("Test " + std::to_string(i+1)).c_str());
     axisX->append(categories);
 
     chart->setTitle("Test Result Stats");

@@ -33,6 +33,10 @@ private slots:
 
     void on_pushButtonResetTest_clicked();
 
+    void on_pushButtonClientFile_clicked();
+
+    void on_pushButtonServerFile_clicked();
+
 private:
     Ui::MainWindow *ui;
     //dont add Ui namespace, everything will break

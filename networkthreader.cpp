@@ -152,8 +152,6 @@ void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
         //save it
     } else {
         resultAdd("Connection closed.");
-        //auto t = TestSet::getTestSets();
-        //t->newTest();
         return;
     }
 

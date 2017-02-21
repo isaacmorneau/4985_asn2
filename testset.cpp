@@ -47,6 +47,9 @@ void TestSet::extractSets(QtCharts::QBarSet *outTotal, QtCharts::QBarSet *outLos
     if(!size()){
         newTest();
     }
+    //if theres no real data dont try and make empty sets
+    if(size() == 1 && testsSent.at(0) + testsLost.at(0) + testsSize.at(0) == 0)
+        return;
     for(auto i = testsSent.begin(); i != testsSent.end(); ++i)
         *outTotal << *i;
     for(auto i = testsLost.begin(); i != testsLost.end(); ++i)
