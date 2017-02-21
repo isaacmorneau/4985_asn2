@@ -27,14 +27,17 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     networkthreader.cpp \
     statswindow.cpp \
-    testset.cpp
+    testset.cpp \
+    tablewindow.cpp
 
 HEADERS  += mainwindow.h \
     networkthreader.h \
     statswindow.h \
-    testset.h
+    testset.h \
+    tablewindow.h
 
 FORMS    += mainwindow.ui \
-    statswindow.ui
+    statswindow.ui \
+    tablewindow.ui
 
 LIBS    += -lws2_32

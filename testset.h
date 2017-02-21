@@ -1,6 +1,7 @@
 #ifndef TESTSET_H
 #define TESTSET_H
 #include <vector>
+#include <string>
 #include <QtCharts/QBarSet>
 
 class TestSet
@@ -10,15 +11,15 @@ public:
     static void destroyTestSets();
     static TestSet *instance;
 
-    void addToTest(double sent, double lost, double total);
-    void newTest();
+    void addToTest(double sent, double lost, double size);
+    void newTest(std::string protocol);
     void extractSets(QtCharts::QBarSet *outTotal, QtCharts::QBarSet *outLost, QtCharts::QBarSet *outSize);
     int size();
     void clear();
+    std::tuple<int,int,int,std::string> at(int index);
 private:
-    std::vector<double> testsSent;
-    std::vector<double> testsLost;
-    std::vector<double> testsSize;
+    //total sent, total lost, total size
+    std::vector<std::tuple<int,int,int,std::string>> tests;
     TestSet();
 };
 

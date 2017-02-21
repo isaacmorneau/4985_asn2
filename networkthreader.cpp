@@ -56,7 +56,7 @@ void serverTCP(int port, int buffsize){
         }
         resultAdd("Connected.");
     auto test = TestSet::getTestSets();
-    test->newTest();
+    test->newTest("TCP");
         DWORD flags = 0;
         if(sharedInfo.buffer == 0){
             sharedInfo.buffer = static_cast<char*>(malloc(buffsize * sizeof(char)));
@@ -112,7 +112,7 @@ void serverUDP(int port, int buffsize){
         sharedInfo.wsabuff.len = buffsize;
     }
     auto test = TestSet::getTestSets();
-    test->newTest();
+    test->newTest("UDP");
     if(WSARecvFrom(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                    &flags, 0, 0, &sharedInfo.overlapped, workerRoutineUDP_server)){
         if(WSAGetLastError() != WSA_IO_PENDING){
@@ -253,7 +253,7 @@ void clientTCP(string dest, int  port, int size, int number){
     resultAdd("Connected.");
     resultAdd("Sending...");
     auto test = TestSet::getTestSets();
-    test->newTest();
+    test->newTest("TCP");
     if(sharedInfo.buffer != 0){
         free(sharedInfo.buffer);
     }
@@ -276,7 +276,7 @@ void clientTCP(string dest, int  port, int size, int number){
         auto test = TestSet::getTestSets();
         test->addToTest(1, 0, size);
         //increment status bar
-        resultSet(double(total - number) / 100 * total);
+        resultSet((double(total - number) / total) * 100);
     }
     if(sharedInfo.running)
         resultAdd("Finished.");
@@ -312,7 +312,7 @@ void clientUDP(string dest, int  port, int size, int number){
 
     resultAdd("Sending...");
     auto test = TestSet::getTestSets();
-    test->newTest();
+    test->newTest("UDP");
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
     sharedInfo.buffer = static_cast<char*>(malloc(size * sizeof(char)));
@@ -333,8 +333,7 @@ void clientUDP(string dest, int  port, int size, int number){
         auto test = TestSet::getTestSets();
         test->addToTest(1, 0, size);
         //increment status bar
-        int tmp = (double(total - number) / total) * 100;
-        resultSet(tmp);
+        resultSet((double(total - number) / total) * 100);
     }
     if(sharedInfo.running)
         resultAdd("Finished.");

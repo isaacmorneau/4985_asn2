@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>705</width>
+    <width>722</width>
     <height>294</height>
    </rect>
   </property>
@@ -35,8 +35,8 @@
      <rect>
       <x>610</x>
       <y>40</y>
-      <width>81</width>
-      <height>28</height>
+      <width>101</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -76,39 +76,13 @@
     <property name="geometry">
      <rect>
       <x>610</x>
-      <y>80</y>
-      <width>81</width>
-      <height>28</height>
+      <y>70</y>
+      <width>101</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
      <string>Stop</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBoxStats">
-    <property name="geometry">
-     <rect>
-      <x>610</x>
-      <y>120</y>
-      <width>72</width>
-      <height>19</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Show Stats</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButtonResetTest">
-    <property name="geometry">
-     <rect>
-      <x>610</x>
-      <y>150</y>
-      <width>81</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Reset Tests</string>
     </property>
    </widget>
    <widget class="QTabWidget" name="tabClientServer">
@@ -376,17 +350,6 @@
        <bool>true</bool>
       </property>
      </widget>
-     <zorder>label_10</zorder>
-     <zorder>lineEditBuffer</zorder>
-     <zorder>label_9</zorder>
-     <zorder>lineEditPortServer</zorder>
-     <zorder>lineEditFileNameServer</zorder>
-     <zorder>pushButtonServerFile</zorder>
-     <zorder>radioButtonSave</zorder>
-     <zorder>radioButtonSave</zorder>
-     <zorder>radioButtonNoSave</zorder>
-     <zorder>radioButtonSave</zorder>
-     <zorder>radioButtonNoSave</zorder>
     </widget>
    </widget>
    <widget class="QComboBox" name="comboBoxProto">
@@ -421,6 +384,58 @@
     <property name="text">
      <string>Protocol</string>
     </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>600</x>
+      <y>100</y>
+      <width>111</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Stats</string>
+    </property>
+    <widget class="QCheckBox" name="checkBoxStats">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>101</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show Bar Chart</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxTable">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>72</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show Table</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonResetTest">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>81</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Reset Stats</string>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>

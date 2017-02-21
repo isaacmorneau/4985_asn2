@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <string>
 #include "statswindow.h"
+#include "tablewindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -37,10 +38,13 @@ private slots:
 
     void on_pushButtonServerFile_clicked();
 
+    void on_checkBoxTable_clicked();
+
 private:
     Ui::MainWindow *ui;
     //dont add Ui namespace, everything will break
     StatsWindow *stats;
+    TableWindow *table;
 };
 
 #endif // MAINWINDOW_H

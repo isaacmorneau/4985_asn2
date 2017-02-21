@@ -11,7 +11,9 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    stats(new StatsWindow)
+    stats(new StatsWindow),
+    table(new TableWindow)
+
 {
     ui->setupUi(this);
     //to facilitate the hack for sending data to the window
@@ -22,6 +24,7 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete stats;
+    delete table;
 }
 
 void MainWindow::messageAdd_slot(std::string s){
@@ -123,4 +126,14 @@ void MainWindow::on_pushButtonServerFile_clicked()
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Open File"), "", tr("All Files (*.*)"));
     ui->lineEditFileNameServer->setText(fileName);
+}
+
+void MainWindow::on_checkBoxTable_clicked()
+{
+    if(ui->checkBoxTable->isChecked()) {
+        QMetaObject().invokeMethod(table, "updateData");
+        table->show();
+    } else {
+        table->hide();
+    }
 }

@@ -1,5 +1,7 @@
 #include "testset.h"
 #include <vector>
+#include <string>
+#include <tuple>
 
 TestSet* TestSet::instance;
 
@@ -20,50 +22,41 @@ TestSet::TestSet()
     TestSet::instance = 0;
 }
 
-void TestSet::addToTest(double sent, double lost, double total){
-    if(!size()){
-        newTest();
-    }
-    double tmp = sent + testsSent.back();
-    testsSent.pop_back();
-    testsSent.push_back(tmp);
+void TestSet::addToTest(double sent, double lost, double size){
+    auto tup = tests.back();
+    sent += std::get<0>(tup);
+    lost += std::get<1>(tup);
+    size += std::get<2>(tup);
+    auto updated = std::make_tuple(sent, lost, size, std::get<3>(tup));
+    tests.pop_back();
+    tests.push_back(updated);
 
-    tmp = lost + testsLost.back();
-    testsLost.pop_back();
-    testsLost.push_back(tmp);
-
-    tmp = total + testsSize.back();
-    testsSize.pop_back();
-    testsSize.push_back(tmp);
 }
 
-void TestSet::newTest(){
-    testsSent.push_back(0);
-    testsLost.push_back(0);
-    testsSize.push_back(0);
+void TestSet::newTest(std::string protocol){
+    tests.push_back(std::make_tuple(0, 0, 0, protocol));
 }
 
 void TestSet::extractSets(QtCharts::QBarSet *outTotal, QtCharts::QBarSet *outLost, QtCharts::QBarSet *outSize){
-    if(!size()){
-        newTest();
-    }
     //if theres no real data dont try and make empty sets
-    if(size() == 1 && testsSent.at(0) + testsLost.at(0) + testsSize.at(0) == 0)
+    if(!size() || (size() == 1 && std::get<0>(tests.at(0)) == 0))
         return;
-    for(auto i = testsSent.begin(); i != testsSent.end(); ++i)
-        *outTotal << *i;
-    for(auto i = testsLost.begin(); i != testsLost.end(); ++i)
-        *outLost << *i;
-    for(auto i = testsSize.begin(); i != testsSize.end(); ++i)
-        *outSize << *i;
+    for(auto i = tests.begin(); i != tests.end(); ++i){
+        *outTotal << std::get<0>(*i);
+        *outLost << std::get<1>(*i);
+        *outSize << std::get<2>(*i);
+    }
+}
+
+std::tuple<int,int,int,std::string> TestSet::at(int index){
+    return tests.at(index);
 }
 
 int TestSet::size(){
-    return testsSent.size();
+    return tests.size();
 }
 
 void TestSet::clear(){
-    testsLost.clear();
-    testsSent.clear();
-    testsSize.clear();
+    tests.clear();
+
 }

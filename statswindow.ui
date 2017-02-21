@@ -14,22 +14,6 @@
    <string>Stats</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>643</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuRefresh">
-    <property name="title">
-     <string>Refresh</string>
-    </property>
-   </widget>
-   <addaction name="menuRefresh"/>
-  </widget>
   <action name="actionRefresh">
    <property name="text">
     <string>Refresh</string>
