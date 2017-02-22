@@ -123,11 +123,6 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
         resultError("WSAEventSelect failed.");
         return 0;
     }
-    //wait for it to allow a write
-    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
-        resultError("WSAWaitForMultipleEvents failed.");
-        return 0;
-    }
     //check for imediate completion
     if(!WSASendTo(*socket, buff, 1, recvd, 0, addr, sizeof(SOCKADDR_IN), overlapped,
                   workerRoutine_client)){
@@ -177,11 +172,6 @@ int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overla
     //register event
     if(WSAEventSelect(*socket, *events, FD_READ | FD_CLOSE) == SOCKET_ERROR){
         resultError("WSAEventSelect failed.");
-        return 0;
-    }
-    //wait for it to allow a read
-    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
-        resultError("WSAWaitForMultipleEvents failed.");
         return 0;
     }
     //check for imediate completion
