@@ -106,7 +106,12 @@ int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
         //worked first try
         return 1;
     }
-    return 0;
+    //wait for it to finish
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        return 0;
+    }
+    return 1;
 }
 
 
@@ -129,7 +134,12 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
         //worked first try
         return 1;
     }
-    return 0;
+    //wait for it to finish
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        return 0;
+    }
+    return 1;
 }
 
 
@@ -152,7 +162,12 @@ int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
         //worked first try
         return 1;
     }
-    return 0;
+    //wait for it to finish
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        return 0;
+    }
+    return 1;
 }
 
 
@@ -175,5 +190,10 @@ int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overla
         //worked first try
         return 1;
     }
-    return 0;
+    //wait for it to finish
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        return 0;
+    }
+    return 1;
 }
