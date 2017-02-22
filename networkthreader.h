@@ -3,13 +3,14 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <string>
+#include <fstream>
 
 //starts server
-void serverTCP(int port, int buffsize);
-void serverUDP(int port, int buffsize);
+void serverTCP(int port, int buffsize, const std::string &outFile);
+void serverUDP(int port, int buffsize, const std::string &outFile);
 //starts client
-void clientTCP(std::string dest, int  port, int size, int number);
-void clientUDP(std::string dest, int  port, int size, int number);
+void clientTCP(const std::string &dest, int  port, int size, int number, const std::string &inFile);
+void clientUDP(const std::string &dest, int  port, int size, int number, const std::string &inFile);
 
 //callback for async events
 void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
@@ -27,9 +28,13 @@ typedef struct _sharedinfo {
     char *buffer;
     int size;
     WSABUF wsabuff;
-    DWORD recvd;
-    bool running;
     OVERLAPPED overlapped;
+    DWORD recvd;
+
+    bool running;
+
+    bool usingFile;
+    std::fstream file;
 } sharedinfo;
 
 extern sharedinfo sharedInfo;

@@ -2,19 +2,19 @@
 #include "wrapper.h"
 #include "mainwindow.h"
 #include "testset.h"
-
 #include <thread>
 #include <string>
 #include <winsock2.h>
 #include <windows.h>
 #include <stdio.h>
+#include <fstream>
 
 using namespace std;
 //starts server
 
 sharedinfo sharedInfo{};
 
-void serverTCP(int port, int buffsize){
+void serverTCP(int port, int buffsize, const string &outFile){
     //initialize the data
     resultClear();
     resultAdd("Starting TCP Server.");
@@ -22,6 +22,13 @@ void serverTCP(int port, int buffsize){
     SOCKET tempSock;
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
     sharedInfo.running = true;
+    if((sharedInfo.usingFile = outFile.size() > 0)){
+        sharedInfo.file = fstream(outFile.c_str(),ios_base::out | ios_base::binary);
+        if(!sharedInfo.file.is_open()){
+            resultAdd("Unable to upen file");
+            return;
+        }
+    }
 
     //create the socket for listening
     if((tempSock = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
@@ -42,7 +49,7 @@ void serverTCP(int port, int buffsize){
         return;
     }
 
-    //
+    //create a request for an async accept and wait for it to complete
     resultAdd("Waiting for connection...");
     if(!asyncAccept(tempSock, &sharedInfo.sharedSocket))
         return;
@@ -77,17 +84,26 @@ void serverTCP(int port, int buffsize){
     //dont leave memory lying about
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
+    if(sharedInfo.usingFile)
+        sharedInfo.file.close();
     resultAdd("Stopping...");
 }
 
 
-void serverUDP(int port, int buffsize){
+void serverUDP(int port, int buffsize, const string &outFile){
     //initialize the data
     resultClear();
     resultAdd("Starting UDP Server.");
     SOCKADDR_IN addr;
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
     sharedInfo.running = true;
+    if((sharedInfo.usingFile = outFile.size() > 0)){
+        sharedInfo.file = fstream(outFile.c_str(),ios_base::out | ios_base::binary);
+        if(!sharedInfo.file.is_open()){
+            resultAdd("Unable to upen file");
+            return;
+        }
+    }
 
     //create the socket
     if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_DGRAM,0,0,0,WSA_FLAG_OVERLAPPED))
@@ -134,6 +150,9 @@ void serverUDP(int port, int buffsize){
     //dont leave memory lying about
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
+    if(sharedInfo.usingFile)
+        sharedInfo.file.close();
+    resultAdd("Stopping...");
 }
 
 void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
@@ -146,11 +165,18 @@ void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
         return;
     }
 
+    //save it
     if (bytesTrans) {
         auto test = TestSet::getTestSets();
         test->addToTest(1,0,bytesTrans);
         resultAdd("read " + to_string(bytesTrans));
-        //save it
+        if(sharedInfo.usingFile){
+            sharedInfo.file.write(sharedInfo.buffer,bytesTrans);
+            if(sharedInfo.file.bad()){
+                resultAdd("Failed to write to file.");
+                return;
+            }
+        }
     } else {
         resultAdd("Connection closed.");
         return;
@@ -194,6 +220,13 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
             test->addToTest(1,0,bytesTrans);
             resultAdd("read " + to_string(bytesTrans));
             //save it
+            if(sharedInfo.usingFile){
+                sharedInfo.file.write(sharedInfo.buffer,bytesTrans);
+                if(sharedInfo.file.bad()){
+                    resultAdd("Failed to write to file.");
+                    return;
+                }
+            }
         } else {
             resultAdd("Nothing to read.");
             return;
@@ -222,13 +255,21 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
 }
 
 //starts client
-void clientTCP(string dest, int  port, int size, int number){
+void clientTCP(const string &dest, int  port, int size, int number, const string &inFile){
     //initialize the data
     resultClear();
     resultAdd("Starting TCP Client.");
     SOCKADDR_IN addr;
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
     sharedInfo.running = true;
+    if((sharedInfo.usingFile = inFile.size() > 0)){
+        sharedInfo.file = fstream(inFile.c_str(),ios_base::in | ios_base::binary);
+        if(!sharedInfo.file.is_open()){
+            resultAdd("Unable to upen file");
+            return;
+        }
+        number = 1;
+    }
 
     //create the socket
     if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_STREAM,0,0,0,WSA_FLAG_OVERLAPPED))
@@ -262,16 +303,23 @@ void clientTCP(string dest, int  port, int size, int number){
     }
     sharedInfo.buffer = static_cast<char*>(malloc(size * sizeof(char)));
     sharedInfo.size = size;
-    //read from file
-    memset(sharedInfo.buffer,'a', size);
+    if(!sharedInfo.usingFile)
+        memset(sharedInfo.buffer,'a', size);
+    sharedInfo.wsabuff.buf = sharedInfo.buffer;
+    sharedInfo.wsabuff.len = size;
     int total = number;
-    while(sharedInfo.running && number--){//keep sending
-        DWORD flags = 0;
-        sharedInfo.wsabuff.buf = sharedInfo.buffer;
-        sharedInfo.wsabuff.len = size;
+    while(sharedInfo.running && number){//keep sending
+        if(sharedInfo.usingFile){
+            sharedInfo.file.read(sharedInfo.buffer,sharedInfo.size);
+            if (!(sharedInfo.wsabuff.len = sharedInfo.file.gcount())){
+                break;
+            }
+        } else {
+            --number;
+        }
         //register sender completion routine
         if(WSASend(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                   flags, &sharedInfo.overlapped, workerRoutine_client)){
+                   0, &sharedInfo.overlapped, workerRoutine_client)){
             if(WSAGetLastError() != WSA_IO_PENDING){
                 resultError("WSASend Failed.");
                 return;
@@ -290,16 +338,25 @@ void clientTCP(string dest, int  port, int size, int number){
     //dont leave memory lying about
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
+    if(sharedInfo.usingFile)
+        sharedInfo.file.close();
 }
 
-void clientUDP(string dest, int  port, int size, int number){
+void clientUDP(const string &dest, int  port, int size, int number, const string &inFile){
     //initialize
     resultClear();
     resultAdd("Starting UDP Client.");
     SOCKADDR_IN addr;
     memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
     sharedInfo.running = true;
-
+    if((sharedInfo.usingFile = inFile.size() > 0)){
+        sharedInfo.file = fstream(inFile.c_str(),ios_base::in | ios_base::binary);
+        if(!sharedInfo.file.is_open()){
+            resultAdd("Unable to upen file");
+            return;
+        }
+        number = 1;
+    }
     //create the socket
     if((sharedInfo.sharedSocket = WSASocket(AF_INET,SOCK_DGRAM,0,0,0,WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET){
         resultError("WSASocket Failed");
@@ -324,12 +381,20 @@ void clientUDP(string dest, int  port, int size, int number){
         free(sharedInfo.buffer);
     sharedInfo.buffer = static_cast<char*>(malloc(size * sizeof(char)));
     sharedInfo.size = size;
-    memset(sharedInfo.buffer,'a', size);
+    if(!sharedInfo.usingFile)
+        memset(sharedInfo.buffer,'a', size);
     sharedInfo.wsabuff.buf = sharedInfo.buffer;
     sharedInfo.wsabuff.len = size;
     int total = number;
-
-    while(sharedInfo.running && number--){//keep sending
+    while(sharedInfo.running && number){//keep sending
+        if(sharedInfo.usingFile){
+            sharedInfo.file.read(sharedInfo.buffer,sharedInfo.size);
+            if (!(sharedInfo.wsabuff.len = sharedInfo.file.gcount())){
+                break;
+            }
+        } else {
+            --number;
+        }
         //register the sender completion routine
         if(WSASendTo(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
                      0, (PSOCKADDR)&addr, sizeof(SOCKADDR_IN), &sharedInfo.overlapped, workerRoutine_client)){
@@ -348,6 +413,8 @@ void clientUDP(string dest, int  port, int size, int number){
         resultAdd("Finished.");
     else
         resultAdd("Stopped.");
+    if(sharedInfo.usingFile)
+        sharedInfo.file.close();
 }
 
 void CALLBACK workerRoutine_client(DWORD error, DWORD, LPWSAOVERLAPPED, DWORD){

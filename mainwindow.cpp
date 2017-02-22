@@ -43,6 +43,7 @@ void MainWindow::messageClear_slot(){
 
 void MainWindow::on_pushButtonStart_clicked()
 {
+
     ui->pushButtonStart->setEnabled(false);
     ui->pushButtonStop->setEnabled(true);
 
@@ -55,29 +56,73 @@ void MainWindow::on_pushButtonStart_clicked()
 
     std::string dest;
     int port, size, number;
+    bool usingFile = false;
 
     if(ui->tabClientServer->currentIndex() == 0){//client
-        port = ui->lineEditPortClient->text().toInt();
+        //vet ui
+        if(ui->radioButtonFile->isChecked()){
+            if(ui->lineEditFileNameClient->text().size() == 0){
+                ui->textBrowserOutput->append("Please Select A File");
+                return;
+            } else {
+                usingFile = true;
+            }
+        }
+
+        //init
+        if((port = ui->lineEditPortClient->text().toInt())<1){
+            ui->textBrowserOutput->append("Port must be positive integer");
+            return;
+        }
         dest = ui->lineEditDestination->text().toStdString();
         size = ui->lineEditPacketSize->text().toInt();
-        //file or junk
+        if(!usingFile && size < 1){
+            ui->textBrowserOutput->append("Size must be positive integer");
+            return;
+        }
+
         number = ui->lineEditPacketNum->text().toInt();
+        if(!usingFile && number < 1){
+            ui->textBrowserOutput->append("Number must be positive integer");
+            return;
+        }
+
         std::thread client;
         if(ui->comboBoxProto->currentIndex() == 0)
-            client = std::thread(clientTCP, dest, port, size, number);
+            client = std::thread(clientTCP, dest, port, size, number,
+                                 usingFile ? ui->lineEditFileNameClient->text().toStdString() : "");
         else
-            client = std::thread(clientUDP, dest, port, size, number);
+            client = std::thread(clientUDP, dest, port, size, number,
+                                 usingFile ? ui->lineEditFileNameClient->text().toStdString() : "");
         client.detach();
     } else {//server
-        port = ui->lineEditPortServer->text().toInt();
+        //vet ui
+        if(ui->radioButtonSave->isChecked()){
+            if(ui->lineEditFileNameServer->text().size() == 0){
+                ui->textBrowserOutput->append("Please Select A File");
+                return;
+            } else {
+                usingFile = true;
+            }
+        }
+        if((port = ui->lineEditPortServer->text().toInt())<1){
+            ui->textBrowserOutput->append("Port must be positive integer");
+            return;
+        }
 
         size = ui->lineEditBuffer->text().toInt();
-        //start server
+        if(!usingFile && size < 1){
+            ui->textBrowserOutput->append("Size must be positive integer");
+            return;
+        }
+
         std::thread server;
         if(ui->comboBoxProto->currentIndex() == 0)
-            server = std::thread(serverTCP, port, size);
+            server = std::thread(serverTCP, port, size,
+                                 usingFile ? ui->lineEditFileNameServer->text().toStdString() : "");
         else
-            server = std::thread(serverUDP, port, size);
+            server = std::thread(serverUDP, port, size,
+                                 usingFile ? ui->lineEditFileNameServer->text().toStdString() : "");
         server.detach();
     }
 }
@@ -124,7 +169,7 @@ void MainWindow::on_pushButtonClientFile_clicked()
 
 void MainWindow::on_pushButtonServerFile_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
+    QString fileName = QFileDialog::getSaveFileName(this,
         tr("Open File"), "", tr("All Files (*.*)"));
     ui->lineEditFileNameServer->setText(fileName);
 }
