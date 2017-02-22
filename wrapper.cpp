@@ -91,8 +91,14 @@ int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
-    if(WSAEventSelect(*socket, *events, FD_WRITE) == SOCKET_ERROR){
+    if(WSAEventSelect(*socket, *events, FD_WRITE | FD_CLOSE) == SOCKET_ERROR){
         resultError("WSAEventSelect failed.");
+        return 0;
+    }
+
+    //wait for it to allow a write
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
         return 0;
     }
     //check for imediate completion
@@ -100,17 +106,7 @@ int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
         //worked first try
         return 1;
     }
-    //didnt work, why?
-    if(WSAGetLastError() != WSAEWOULDBLOCK){
-        resultError("WSASend failed.");
-        return 0;
-    }
-    //wait for it to not block anymore
-    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
-        resultError("WSAWaitForMultipleEvents failed.");
-        return 0;
-    }
-    return 1;
+    return 0;
 }
 
 
@@ -118,8 +114,13 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
-    if(WSAEventSelect(*socket, *events, FD_WRITE) == SOCKET_ERROR){
+    if(WSAEventSelect(*socket, *events, FD_WRITE | FD_CLOSE) == SOCKET_ERROR){
         resultError("WSAEventSelect failed.");
+        return 0;
+    }
+    //wait for it to allow a write
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
         return 0;
     }
     //check for imediate completion
@@ -128,17 +129,7 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
         //worked first try
         return 1;
     }
-    //didnt work, why?
-    if(WSAGetLastError() != WSAEWOULDBLOCK){
-        resultError("WSASendTo failed.");
-        return 0;
-    }
-    //wait for it to not block anymore
-    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
-        resultError("WSAWaitForMultipleEvents failed.");
-        return 0;
-    }
-    return 1;
+    return 0;
 }
 
 
@@ -146,8 +137,13 @@ int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
-    if(WSAEventSelect(*socket, *events, FD_READ) == SOCKET_ERROR){
+    if(WSAEventSelect(*socket, *events, FD_READ | FD_CLOSE) == SOCKET_ERROR){
         resultError("WSAEventSelect failed.");
+        return 0;
+    }
+    //wait for it to allow a read
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
         return 0;
     }
     //check for imediate completion
@@ -156,17 +152,7 @@ int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
         //worked first try
         return 1;
     }
-    //didnt work, why?
-    if(WSAGetLastError() != WSAEWOULDBLOCK){
-        resultError("WSARecv failed.");
-        return 0;
-    }
-    //wait for it to not block anymore
-    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
-        resultError("WSAWaitForMultipleEvents failed.");
-        return 0;
-    }
-    return 1;
+    return 0;
 }
 
 
@@ -174,8 +160,13 @@ int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overla
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
-    if(WSAEventSelect(*socket, *events, FD_READ) == SOCKET_ERROR){
+    if(WSAEventSelect(*socket, *events, FD_READ | FD_CLOSE) == SOCKET_ERROR){
         resultError("WSAEventSelect failed.");
+        return 0;
+    }
+    //wait for it to allow a read
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
         return 0;
     }
     //check for imediate completion
@@ -184,15 +175,5 @@ int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overla
         //worked first try
         return 1;
     }
-    //didnt work, why?
-    if(WSAGetLastError() != WSAEWOULDBLOCK){
-        resultError("WSARecv failed.");
-        return 0;
-    }
-    //wait for it to not block anymore
-    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
-        resultError("WSAWaitForMultipleEvents failed.");
-        return 0;
-    }
-    return 1;
+    return 0;
 }
