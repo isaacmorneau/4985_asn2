@@ -143,6 +143,10 @@ void MainWindow::on_pushButtonStop_clicked()
     if(WSACleanup() != 0){
         resultError("WSACleanup Failed.");
     }
+    if(ui->tabClientServer->currentIndex() == 0){
+        //get the test code for the client
+        ui->lineEditCodeClient->setText(QString::fromStdString(TestSet::getTestSets()->outputCode()));
+    }
 }
 
 void MainWindow::on_checkBoxStats_clicked()
@@ -163,14 +167,14 @@ void MainWindow::on_pushButtonResetTest_clicked()
 void MainWindow::on_pushButtonClientFile_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open File"), "", tr("All Files (*.*)"));
+        tr("Open Transfer"), "", tr("All Files (*.*)"));
     ui->lineEditFileNameClient->setText(fileName);
 }
 
 void MainWindow::on_pushButtonServerFile_clicked()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Open File"), "", tr("All Files (*.*)"));
+        tr("Save Transfer"), "", tr("All Files (*.*)"));
     ui->lineEditFileNameServer->setText(fileName);
 }
 
@@ -181,5 +185,13 @@ void MainWindow::on_checkBoxTable_clicked()
         table->show();
     } else {
         table->hide();
+    }
+}
+
+void MainWindow::on_pushButtonApply_clicked()
+{
+    std::string code = ui->lineEditCodeServer->text().toStdString();
+    if(code.size() > 0){
+        TestSet::getTestSets()->inputCode(code);
     }
 }

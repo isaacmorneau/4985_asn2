@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Stats</string>
+   <string>Stats View</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
  </widget>
