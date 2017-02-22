@@ -36,7 +36,7 @@ int asyncAccept(SOCKET tempsocket, SOCKET *toAccept){
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
-    if(WSAEventSelect(tempsocket, *events, FD_ACCEPT) == SOCKET_ERROR){
+    if(WSAEventSelect(tempsocket, *events, FD_ACCEPT | FD_CLOSE) == SOCKET_ERROR){
         resultError("WSAEventSelect failed.");
         return 0;
     }
@@ -64,7 +64,7 @@ int asyncConnect(SOCKET *socket, SOCKADDR *addr){
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
-    if(WSAEventSelect(*socket, *events, FD_CONNECT) == SOCKET_ERROR){
+    if(WSAEventSelect(*socket, *events, FD_CONNECT | FD_CLOSE) == SOCKET_ERROR){
         resultError("WSAEventSelect failed.");
         return 0;
     }
@@ -129,6 +129,21 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
         //worked first try
         return 1;
     }
+    if(WSAGetLastError() == WSAEWOULDBLOCK){
+        //wait for the other one to finish
+        if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+            resultError("WSAWaitForMultipleEvents failed.");
+            return 0;
+        }
+        //check for completion
+        if(!WSASendTo(*socket, buff, 1, recvd, 0, addr, sizeof(SOCKADDR_IN), overlapped,
+                      workerRoutine_client)){
+            //worked now
+            return 1;
+        }
+
+    }
+    //it would is pending
     //wait for it to finish
     if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
         resultError("WSAWaitForMultipleEvents failed.");

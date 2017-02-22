@@ -67,7 +67,7 @@ void TestSet::clear(){
 }
 
 void TestSet::inputCode(const string& code){
-    int read = 0, sent, psize, tmp;
+    int read = 0, sent, tmp;
     char buffer[256];
     for(int i = 0, j = 0, sz = size(); i < static_cast<int>(code.size()) && j < sz ; i += read , j++){
         sscanf(&code.c_str()[i],"%X:",&sent);
