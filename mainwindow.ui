@@ -246,7 +246,7 @@
        <rect>
         <x>10</x>
         <y>190</y>
-        <width>101</width>
+        <width>141</width>
         <height>21</height>
        </rect>
       </property>
@@ -264,6 +264,19 @@
        </rect>
       </property>
      </widget>
+     <zorder>label_3</zorder>
+     <zorder>lineEditFileNameClient</zorder>
+     <zorder>label_6</zorder>
+     <zorder>label_11</zorder>
+     <zorder>label_13</zorder>
+     <zorder>lineEditCodeClient</zorder>
+     <zorder>pushButtonClientFile</zorder>
+     <zorder>radioButtonPacket</zorder>
+     <zorder>radioButtonFile</zorder>
+     <zorder>lineEditPacketNum</zorder>
+     <zorder>lineEditPacketSize</zorder>
+     <zorder>lineEditDestination</zorder>
+     <zorder>lineEditPortClient</zorder>
     </widget>
     <widget class="QWidget" name="tabServer">
      <attribute name="title">
@@ -495,7 +508,19 @@
       <string>Reset Stats</string>
      </property>
     </widget>
+    <zorder>checkBoxTable</zorder>
+    <zorder>pushButtonResetTest</zorder>
+    <zorder>checkBoxStats</zorder>
    </widget>
+   <zorder>label_8</zorder>
+   <zorder>progressBarL</zorder>
+   <zorder>textBrowserOutput</zorder>
+   <zorder>tabClientServer</zorder>
+   <zorder>label_2</zorder>
+   <zorder>groupBox</zorder>
+   <zorder>pushButtonStop</zorder>
+   <zorder>pushButtonStart</zorder>
+   <zorder>comboBoxProto</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

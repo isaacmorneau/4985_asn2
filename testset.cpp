@@ -70,8 +70,8 @@ void TestSet::inputCode(const string& code){
     int read = 0, sent, psize, tmp;
     char buffer[256];
     for(int i = 0, j = 0, sz = size(); i < static_cast<int>(code.size()) && j < sz ; i += read , j++){
-        sscanf(&code.c_str()[i],"%X %X ",&sent, &psize);
-        sprintf(buffer,"%X %X ",sent, psize);
+        sscanf(&code.c_str()[i],"%X:",&sent);
+        sprintf(buffer,"%X:",sent);
         read = strlen(buffer);
 
         if(get<3>(tests[j]) == string("TCP")){
@@ -89,7 +89,7 @@ string TestSet::outputCode(){
         return "";
     char buff[1024];
     for(int i = 0, j = 0, sz = size(); i < 1024 && j < sz ; i = strlen(buff) , j++){
-        sprintf(&buff[i],"%X %X ",get<0>(tests[j]), get<2>(tests[j]));
+        sprintf(&buff[i],"%X:",get<0>(tests[j]));
     }
     return string(buff);
 }
