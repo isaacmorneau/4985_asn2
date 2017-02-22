@@ -24,11 +24,13 @@ void TableWindow::updateData(){
     int size = test->size();
     ui->tableWidget->setRowCount(size);
     //test + sent + lost + size + protocol == 4
-    ui->tableWidget->setColumnCount(4);
+    ui->tableWidget->setColumnCount(5);
     ui->tableWidget->setHorizontalHeaderItem(0, new QTableWidgetItem("Packets Sent"));
     ui->tableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem("Packets Lost"));
     ui->tableWidget->setHorizontalHeaderItem(2, new QTableWidgetItem("Transfer Size"));
     ui->tableWidget->setHorizontalHeaderItem(3, new QTableWidgetItem("Protocol"));
+    ui->tableWidget->setHorizontalHeaderItem(4, new QTableWidgetItem("Duration (us)"));
+
     if(!size)
         return;
     for(int i = 0; i < size; ++i){
@@ -38,5 +40,6 @@ void TableWindow::updateData(){
         ui->tableWidget->setItem(i, 1, new QTableWidgetItem(QString::number(std::get<1>(t))));
         ui->tableWidget->setItem(i, 2, new QTableWidgetItem(QString::number(std::get<2>(t))));
         ui->tableWidget->setItem(i, 3, new QTableWidgetItem(std::get<3>(t).c_str()));
+        ui->tableWidget->setItem(i, 4, new QTableWidgetItem(QString::number(std::get<4>(t).count())));
     }
 }

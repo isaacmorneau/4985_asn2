@@ -2,7 +2,11 @@
 #define TESTSET_H
 #include <vector>
 #include <string>
+#include <chrono>
 #include <QtCharts/QBarSet>
+
+typedef std::chrono::time_point<std::chrono::system_clock> timepnt;
+typedef std::chrono::microseconds timedur;
 
 class TestSet
 {
@@ -16,10 +20,11 @@ public:
     void extractSets(QtCharts::QBarSet *outTotal, QtCharts::QBarSet *outLost, QtCharts::QBarSet *outSize);
     int size();
     void clear();
-    std::tuple<int,int,int,std::string> at(int index);
+    std::tuple<int,int,int,std::string,timedur> at(int index);
 private:
     //total sent, total lost, total size
-    std::vector<std::tuple<int,int,int,std::string>> tests;
+    std::vector<std::tuple<int,int,int,std::string, timedur>> tests;
+    timepnt start, newest;
     TestSet();
 };
 

@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <tuple>
+#include <chrono>
 
 TestSet* TestSet::instance;
 
@@ -23,18 +24,21 @@ TestSet::TestSet()
 }
 
 void TestSet::addToTest(double sent, double lost, double size){
+    newest = std::chrono::high_resolution_clock::now();
     auto tup = tests.back();
     sent += std::get<0>(tup);
     lost += std::get<1>(tup);
     size += std::get<2>(tup);
-    auto updated = std::make_tuple(sent, lost, size, std::get<3>(tup));
+    std::tuple<int,int,int,std::string,timedur> updated = std::make_tuple(sent, lost, size, std::get<3>(tup),
+                                   std::chrono::duration_cast<std::chrono::microseconds>(newest-start));
     tests.pop_back();
     tests.push_back(updated);
 
 }
 
 void TestSet::newTest(std::string protocol){
-    tests.push_back(std::make_tuple(0, 0, 0, protocol));
+    tests.push_back(std::make_tuple(0, 0, 0, protocol, std::chrono::milliseconds{0}));
+    start = std::chrono::high_resolution_clock::now();
 }
 
 void TestSet::extractSets(QtCharts::QBarSet *outTotal, QtCharts::QBarSet *outLost, QtCharts::QBarSet *outSize){
@@ -48,7 +52,7 @@ void TestSet::extractSets(QtCharts::QBarSet *outTotal, QtCharts::QBarSet *outLos
     }
 }
 
-std::tuple<int,int,int,std::string> TestSet::at(int index){
+std::tuple<int,int,int,std::string,timedur> TestSet::at(int index){
     return tests.at(index);
 }
 
@@ -58,5 +62,4 @@ int TestSet::size(){
 
 void TestSet::clear(){
     tests.clear();
-
 }
