@@ -401,9 +401,9 @@
    <widget class="QComboBox" name="comboBoxProto">
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>200</y>
-      <width>61</width>
+      <x>290</x>
+      <y>220</y>
+      <width>111</width>
       <height>22</height>
      </rect>
     </property>
