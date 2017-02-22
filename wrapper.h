@@ -17,5 +17,9 @@ extern void *mainwindowptr;
 
 int asyncAccept(SOCKET tempsocket, SOCKET *toAccept);
 int asyncConnect(SOCKET *socket, SOCKADDR *addr);
+int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped);
+int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERLAPPED *overlapped);
+int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped);
+int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped);
 
 #endif // WRAPPER_H

@@ -1,4 +1,5 @@
 #include "wrapper.h"
+#include "networkthreader.h"
 #include "mainwindow.h"
 #include <winsock2.h>
 #include <windows.h>
@@ -82,6 +83,116 @@ int asyncConnect(SOCKET *socket, SOCKADDR *addr){
         resultError("WSAWaitForMultipleEvents failed.");
         return 0;
     }
-    //cool its done
+    return 1;
+}
+
+
+int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped){
+    WSAEVENT events[1];
+    events[0] = WSACreateEvent();
+    //register event
+    if(WSAEventSelect(*socket, *events, FD_WRITE) == SOCKET_ERROR){
+        resultError("WSAEventSelect failed.");
+        return 0;
+    }
+    //check for imediate completion
+    if(!WSASend(*socket, buff, 1, recvd, 0, overlapped, workerRoutine_client)){
+        //worked first try
+        return 1;
+    }
+    //didnt work, why?
+    if(WSAGetLastError() != WSAEWOULDBLOCK){
+        resultError("WSASend failed.");
+        return 0;
+    }
+    //wait for it to not block anymore
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        return 0;
+    }
+    return 1;
+}
+
+
+int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERLAPPED *overlapped){
+    WSAEVENT events[1];
+    events[0] = WSACreateEvent();
+    //register event
+    if(WSAEventSelect(*socket, *events, FD_WRITE) == SOCKET_ERROR){
+        resultError("WSAEventSelect failed.");
+        return 0;
+    }
+    //check for imediate completion
+    if(!WSASendTo(*socket, buff, 1, recvd, 0, addr, sizeof(SOCKADDR_IN), overlapped,
+                  workerRoutine_client)){
+        //worked first try
+        return 1;
+    }
+    //didnt work, why?
+    if(WSAGetLastError() != WSAEWOULDBLOCK){
+        resultError("WSASendTo failed.");
+        return 0;
+    }
+    //wait for it to not block anymore
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        return 0;
+    }
+    return 1;
+}
+
+
+int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped){
+    WSAEVENT events[1];
+    events[0] = WSACreateEvent();
+    //register event
+    if(WSAEventSelect(*socket, *events, FD_READ) == SOCKET_ERROR){
+        resultError("WSAEventSelect failed.");
+        return 0;
+    }
+    //check for imediate completion
+    DWORD flags = 0;
+    if(!WSARecv(*socket, buff, 1, recvd, &flags, overlapped, workerRoutineTCP_server)){
+        //worked first try
+        return 1;
+    }
+    //didnt work, why?
+    if(WSAGetLastError() != WSAEWOULDBLOCK){
+        resultError("WSARecv failed.");
+        return 0;
+    }
+    //wait for it to not block anymore
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        return 0;
+    }
+    return 1;
+}
+
+
+int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped){
+    WSAEVENT events[1];
+    events[0] = WSACreateEvent();
+    //register event
+    if(WSAEventSelect(*socket, *events, FD_READ) == SOCKET_ERROR){
+        resultError("WSAEventSelect failed.");
+        return 0;
+    }
+    //check for imediate completion
+    DWORD flags = MSG_PARTIAL;
+    if(WSARecvFrom(*socket, buff, 1, recvd, &flags, 0, 0, overlapped, workerRoutineUDP_server)){
+        //worked first try
+        return 1;
+    }
+    //didnt work, why?
+    if(WSAGetLastError() != WSAEWOULDBLOCK){
+        resultError("WSARecv failed.");
+        return 0;
+    }
+    //wait for it to not block anymore
+    if(WSAWaitForMultipleEvents(1, events, 0, WSA_INFINITE, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        return 0;
+    }
     return 1;
 }

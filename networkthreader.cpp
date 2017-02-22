@@ -58,7 +58,6 @@ void serverTCP(int port, int buffsize, const string &outFile){
     auto test = TestSet::getTestSets();
     test->newTest("TCP");
 
-    DWORD flags = 0;
     if(sharedInfo.buffer == 0){
         sharedInfo.buffer = static_cast<char*>(malloc(buffsize * sizeof(char)));
         sharedInfo.size = buffsize;
@@ -66,14 +65,8 @@ void serverTCP(int port, int buffsize, const string &outFile){
         sharedInfo.wsabuff.len = buffsize;
     }
     //register the completion routine
-    if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-               &flags, &sharedInfo.overlapped, workerRoutineTCP_server)){
-        if(WSAGetLastError() != WSA_IO_PENDING){
-            closesocket(sharedInfo.sharedSocket);
-            resultError("WSARecv Failed.");
-            return;
-        }
-    }
+    if(!asyncRecv(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd, &sharedInfo.overlapped))
+        return;
 
     //windows will not run the callback unless the thread is alertable
     //the thread can only be signaled as alertable with a SleepEx
@@ -121,7 +114,6 @@ void serverUDP(int port, int buffsize, const string &outFile){
         return;
     }
 
-    DWORD flags = MSG_PARTIAL;
     if(sharedInfo.buffer == 0){
         sharedInfo.buffer = static_cast<char*>(malloc(buffsize * sizeof(char)));
         sharedInfo.size = buffsize;
@@ -131,16 +123,11 @@ void serverUDP(int port, int buffsize, const string &outFile){
     auto test = TestSet::getTestSets();
     test->newTest("UDP");
     //register the completion routine
-    if(WSARecvFrom(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                   &flags, 0, 0, &sharedInfo.overlapped, workerRoutineUDP_server)){
-        if(WSAGetLastError() != WSA_IO_PENDING){
-            resultError("WSARecv Failed.");
-            closesocket(sharedInfo.sharedSocket);
-            resultAdd("WSARecvFrom Failed");
+    if(!asyncRecvFrom(&sharedInfo.sharedSocket, &sharedInfo.wsabuff,
+                     &sharedInfo.recvd,&sharedInfo.overlapped))
             return;
-        }
-    }
     resultAdd("Waiting for datagram...");
+
     //windows will not run the callback unless the thread is alertable
     //the thread can only be signaled as alertable with a SleepEx
     //its in a loop so that when a callback is triggered it will again wait
@@ -182,16 +169,10 @@ void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
         return;
     }
 
-    if(sharedInfo.running) {
-        DWORD flags = 0;
-        if(WSARecv(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                   &flags, &sharedInfo.overlapped, workerRoutineTCP_server)){
-            if(WSAGetLastError() != WSA_IO_PENDING){
-                resultError("WSARecv Failed.");
-                return;
-            }
-        }
-    }
+    if(sharedInfo.running)
+        if(!asyncRecv(&sharedInfo.sharedSocket, &sharedInfo.wsabuff,
+                     &sharedInfo.recvd, &sharedInfo.overlapped))
+            return;
 }
 
 void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
@@ -233,16 +214,10 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
         }
 
         //only reregister if its still running
-        if(sharedInfo.running) {
-            DWORD flags = MSG_PARTIAL;
-            if(WSARecvFrom(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                           &flags, 0, 0, &sharedInfo.overlapped, workerRoutineUDP_server)){
-                if(WSAGetLastError() != WSA_IO_PENDING){
-                    resultAdd("WSARecvFrom Failed");
+        if(sharedInfo.running)
+            if(!asyncRecvFrom(&sharedInfo.sharedSocket, &sharedInfo.wsabuff,
+                              &sharedInfo.recvd, &sharedInfo.overlapped))
                     return;
-                }
-            }
-        }
         break;
     case WSA_OPERATION_ABORTED:
         //we closed it elsewhere
@@ -318,13 +293,8 @@ void clientTCP(const string &dest, int  port, int size, int number, const string
             --number;
         }
         //register sender completion routine
-        if(WSASend(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                   0, &sharedInfo.overlapped, workerRoutine_client)){
-            if(WSAGetLastError() != WSA_IO_PENDING){
-                resultError("WSASend Failed.");
-                return;
-            }
-        }
+        if(!asyncSend(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd, &sharedInfo.overlapped))
+            return;
 
         auto test = TestSet::getTestSets();
         test->addToTest(1, 0, size);
@@ -396,13 +366,9 @@ void clientUDP(const string &dest, int  port, int size, int number, const string
             --number;
         }
         //register the sender completion routine
-        if(WSASendTo(sharedInfo.sharedSocket, &sharedInfo.wsabuff, 1, &sharedInfo.recvd,
-                     0, (PSOCKADDR)&addr, sizeof(SOCKADDR_IN), &sharedInfo.overlapped, workerRoutine_client)){
-            if(WSAGetLastError() != WSA_IO_PENDING){
-                resultError("WSASendTo Failed");
+        if(!asyncSendTo(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd,
+                        (PSOCKADDR)&addr, &sharedInfo.overlapped))
                 return;
-            }
-        }
 
         auto test = TestSet::getTestSets();
         test->addToTest(1, 0, size);

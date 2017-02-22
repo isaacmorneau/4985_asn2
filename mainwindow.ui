@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Messages:</string>
+     <string>Messages</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButtonStart">
@@ -142,7 +142,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>91</width>
+        <width>121</width>
         <height>16</height>
        </rect>
       </property>
@@ -165,7 +165,7 @@
        <rect>
         <x>10</x>
         <y>40</y>
-        <width>91</width>
+        <width>121</width>
         <height>16</height>
        </rect>
       </property>
@@ -191,7 +191,7 @@
        <rect>
         <x>10</x>
         <y>70</y>
-        <width>41</width>
+        <width>121</width>
         <height>16</height>
        </rect>
       </property>
@@ -217,7 +217,7 @@
        <rect>
         <x>10</x>
         <y>126</y>
-        <width>109</width>
+        <width>121</width>
         <height>19</height>
        </rect>
       </property>
@@ -230,7 +230,7 @@
        <rect>
         <x>10</x>
         <y>100</y>
-        <width>109</width>
+        <width>121</width>
         <height>19</height>
        </rect>
       </property>
@@ -246,7 +246,7 @@
        <rect>
         <x>10</x>
         <y>190</y>
-        <width>91</width>
+        <width>101</width>
         <height>21</height>
        </rect>
       </property>
@@ -257,9 +257,9 @@
      <widget class="QLineEdit" name="lineEditCodeClient">
       <property name="geometry">
        <rect>
-        <x>100</x>
+        <x>80</x>
         <y>190</y>
-        <width>151</width>
+        <width>171</width>
         <height>22</height>
        </rect>
       </property>
@@ -423,7 +423,7 @@
      <rect>
       <x>290</x>
       <y>200</y>
-      <width>51</width>
+      <width>111</width>
       <height>16</height>
      </rect>
     </property>
@@ -448,7 +448,7 @@
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>101</width>
+       <width>111</width>
        <height>19</height>
       </rect>
      </property>
@@ -461,7 +461,7 @@
       <rect>
        <x>10</x>
        <y>40</y>
-       <width>72</width>
+       <width>101</width>
        <height>19</height>
       </rect>
      </property>
@@ -474,7 +474,7 @@
       <rect>
        <x>10</x>
        <y>60</y>
-       <width>81</width>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
