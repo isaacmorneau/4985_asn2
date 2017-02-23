@@ -37,6 +37,10 @@ MainWindow::~MainWindow()
     if(WSACleanup() != 0){
         resultError("WSACleanup Failed.");
     }
+    //dont leave memory lying about
+    if(sharedInfo.buffer != 0)
+        free(sharedInfo.buffer);
+    sharedInfo.buffer = 0;
 }
 
 void MainWindow::messageAdd_slot(std::string s){
@@ -139,10 +143,6 @@ void MainWindow::on_pushButtonStop_clicked()
         return;
     sharedInfo.running= false;
     closesocket(sharedInfo.sharedSocket);
-    //dont leave memory lying about
-    if(sharedInfo.buffer != 0)
-        free(sharedInfo.buffer);
-    sharedInfo.buffer = 0;
 
     if(ui->tabClientServer->currentIndex() == 0){
         //get the test code for the client

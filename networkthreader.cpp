@@ -53,8 +53,8 @@ void serverTCP(int port, int buffsize, const string &outFile){
     resultAdd("Waiting for connection...");
     if(!asyncAccept(tempSock, &sharedInfo.sharedSocket))
         return;
-    closesocket(tempSock);
     resultAdd("Connected.");
+    closesocket(tempSock);
 
     auto test = TestSet::getTestSets();
     test->newTest("TCP");
@@ -78,6 +78,7 @@ void serverTCP(int port, int buffsize, const string &outFile){
     //dont leave memory lying about
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
+    sharedInfo.buffer = 0;
     if(sharedInfo.usingFile)
         sharedInfo.file.close();
     resultAdd("Stopping...");
@@ -137,6 +138,7 @@ void serverUDP(int port, int buffsize, const string &outFile){
     //dont leave memory lying about
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
+    sharedInfo.buffer = 0;
     if(sharedInfo.usingFile)
         sharedInfo.file.close();
     resultAdd("Stopping...");
@@ -310,6 +312,7 @@ void clientTCP(const string &dest, int  port, int size, int number, const string
     //dont leave memory lying about
     if(sharedInfo.buffer != 0)
         free(sharedInfo.buffer);
+    sharedInfo.buffer = 0;
     if(sharedInfo.usingFile)
         sharedInfo.file.close();
 }

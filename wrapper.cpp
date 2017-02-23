@@ -93,6 +93,7 @@ int asyncConnect(SOCKET *socket, SOCKADDR *addr){
 int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd){
     OVERLAPPED overlap;
     memset(&overlap,0,sizeof(OVERLAPPED));
+    overlap.hEvent = WSACreateEvent();
 
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
@@ -127,6 +128,21 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr){
     OVERLAPPED overlap;
     memset(&overlap,0,sizeof(OVERLAPPED));
     overlap.hEvent = WSACreateEvent();
+
+    WSAEVENT events[1];
+    events[0] = WSACreateEvent();
+    //register event
+    if(WSAEventSelect(*socket, *events, FD_WRITE | FD_CLOSE) == SOCKET_ERROR){
+        resultError("WSAEventSelect failed.");
+        WSACloseEvent(events[0]);
+        return 0;
+    }
+    //wait for it to not block anymore
+    if(WSAWaitForMultipleEvents(1, events, 1, 100, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        WSACloseEvent(events[0]);
+        return 0;
+    }
     //check for imediate completion
     if(!WSASendTo(*socket, buff, 1, recvd, 0, addr, sizeof(SOCKADDR_IN), &overlap,
                   workerRoutine_client)){
@@ -181,6 +197,20 @@ int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd){
     OVERLAPPED overlap;
     memset(&overlap,0,sizeof(OVERLAPPED));
     overlap.hEvent = WSACreateEvent();
+    WSAEVENT events[1];
+    events[0] = WSACreateEvent();
+    //register event
+    if(WSAEventSelect(*socket, *events, FD_READ | FD_CLOSE) == SOCKET_ERROR){
+        resultError("WSAEventSelect failed.");
+        WSACloseEvent(events[0]);
+        return 0;
+    }
+    //wait for it to not block anymore
+    if(WSAWaitForMultipleEvents(1, events, 1, 100, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        WSACloseEvent(events[0]);
+        return 0;
+    }
     //check for imediate completion
     DWORD flags = MSG_PARTIAL;
     if(WSARecvFrom(*socket, buff, 1, recvd, &flags, 0, 0, &overlap, workerRoutineUDP_server)){
