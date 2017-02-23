@@ -1,3 +1,39 @@
+/**
+ * Program: 4981 Assignment 2
+ *
+ * Source File: wrapper.cpp
+ *
+ *
+ * Functions:
+ * void resultAdd(std::string msg);
+ *
+ * void resultError(std::string msg);
+ *
+ * void resultSet(int percent);
+ *
+ * void resultClear();
+ *
+ * int asyncAccept(SOCKET tempsocket, SOCKET *toAccept);
+ *
+ * int asyncConnect(SOCKET *socket, SOCKADDR *addr);
+ *
+ * int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd);
+ *
+ * int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr);
+ *
+ * int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd);
+ *
+ * int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd);
+ *
+ *
+ * Date: 2017/02/15
+ *
+ * Designer: Isaac Morneau; A00958405
+ *
+ * Programmer: Isaac Morneau; A00958405
+ *
+ * Notes: This file holds all the the wrappers for event waiting on WSA actions incluing accept, connect, send, and recv
+ */
 #ifndef WRAPPER_H
 #define WRAPPER_H
 #include <winsock2.h>
@@ -142,7 +178,6 @@ int asyncConnect(SOCKET *socket, SOCKADDR *addr);
     * 		SOCKET *socket, 		- the socket to send from
     * 		WSABUF *buff, 			- the buffer to read the data out of
     * 		DWORD *recvd, 			- where to store how much was sent
-    * 		OVERLAPPED *overlapped	- the overlapped structure for the io
     * 	);
     *
     * Return:
@@ -151,7 +186,7 @@ int asyncConnect(SOCKET *socket, SOCKADDR *addr);
     * Notes: Wraps sending on a tcp connection to check for pending IO as well as waiting for a call until it wont block
     * It will block until success or failure
     */
-int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped);
+int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd);
     /**
     * Function:asyncSendTo
     *
@@ -167,7 +202,6 @@ int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
     * 		WSABUF *buff, 			- the buffer to read the data out of
     * 		DWORD *recvd, 			- where to store how much was sent
     * 		SOCKADDR *addr,			- the address to send the message to
-    * 		OVERLAPPED *overlapped	- the overlapped structure for the io
     * 	);
     *
     * Return:
@@ -176,7 +210,7 @@ int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
     * Notes: Wraps sending on a udp connection to check for pending IO as well as waiting until the call wont block
     * It will block until success or failure
     */
-int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERLAPPED *overlapped);
+int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr);
     /**
     * Function:asyncRecv
     *
@@ -191,7 +225,6 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
     * 		SOCKET *socket, 		- the socket to read from
     * 		WSABUF *buff, 			- the buffer to write the data into
     * 		DWORD *recvd, 			- where to store how much was read
-    * 		OVERLAPPED *overlapped  - the overlapped structure for the io
     * 	);
     *
     * Return:
@@ -199,7 +232,7 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
     *
     * Notes: Wraps setup recv events for a tcp connection until there is data to be read
     */
-int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped);
+int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd);
     /**
     * Function:asyncRecvFrom
     *
@@ -214,7 +247,6 @@ int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
     * 		SOCKET *socket, 		- the socket to read from
     * 		WSABUF *buff, 			- the buffer to write the data into
     * 		DWORD *recvd, 			- where to store how much was read
-    * 		OVERLAPPED *overlapped  - the overlapped structure for the io
     * 	);
     *
     * Return:
@@ -222,6 +254,6 @@ int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
     *
     * Notes: Wraps setup recv events for a udp datagram until there is one to read
     */
-int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped);
+int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd);
 
 #endif // WRAPPER_H

@@ -6,6 +6,25 @@
  * Class: MainWindow
  *
  * Functions:
+ *     void messageAdd_slot(std::string);
+ *
+ *     void messageSet_slot(int);
+ *
+ *     void messageClear_slot();
+ *
+ *     void on_pushButtonStart_clicked();
+ *
+ *     void on_pushButtonStop_clicked();
+ *
+ *     void on_checkBoxStats_clicked();
+ *
+ *     void on_pushButtonResetTest_clicked();
+ *
+ *     void on_pushButtonClientFile_clicked();
+ *
+ *     void on_pushButtonServerFile_clicked();
+ *
+ *     void on_pushButtonApply_clicked();
  *
  * Date: 2017/02/15
  *

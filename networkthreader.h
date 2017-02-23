@@ -1,3 +1,36 @@
+
+/**
+ * Program: 4981 Assignment 2
+ *
+ * Source File: networkthreader.cpp
+ *
+ * Functions:
+ * void serverTCP(int port, int buffsize, const std::string &outFile);
+ *
+ * void serverUDP(int port, int buffsize, const std::string &outFile);
+ *
+ * void clientTCP(const std::string &dest, int  port, int size, int number, const std::string &inFile);
+ *
+ * void clientUDP(const std::string &dest, int  port, int size, int number, const std::string &inFile);
+ *
+ * void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
+ *    LPWSAOVERLAPPED overlapped, DWORD inFlags);
+ *
+ * void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
+ *    LPWSAOVERLAPPED overlapped, DWORD inFlags);
+ *
+ * void CALLBACK workerRoutine_client(DWORD error, DWORD bytesTrans,
+ *    LPWSAOVERLAPPED overlapped, DWORD inFlags);
+ *
+ * Date: 2017/02/15
+ *
+ * Designer: Isaac Morneau; A00958405
+ *
+ * Programmer: Isaac Morneau; A00958405
+ *
+ * Notes: This is the middle wrappers for turning throw away threads into actual working components by initializing
+ * 		and calling the needed setup variables
+ */
 #ifndef NETWORKINGTHREADER_H
 #define NETWORKINGTHREADER_H
 #include <winsock2.h>
@@ -184,7 +217,6 @@ typedef struct _sharedinfo {
     char *buffer;
     int size;
     WSABUF wsabuff;
-    OVERLAPPED overlapped;
     DWORD recvd;
 
     bool running;

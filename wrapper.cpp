@@ -87,7 +87,9 @@ int asyncConnect(SOCKET *socket, SOCKADDR *addr){
 }
 
 
-int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped){
+int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd){
+    OVERLAPPED overlap;
+    memset(&overlap,0,sizeof(OVERLAPPED));
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
@@ -102,7 +104,7 @@ int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
         return 0;
     }
     //check for imediate completion
-    if(!WSASend(*socket, buff, 1, recvd, 0, overlapped, workerRoutine_client)){
+    if(!WSASend(*socket, buff, 1, recvd, 0, &overlap, workerRoutine_client)){
         //worked first try
         return 1;
     }
@@ -115,7 +117,9 @@ int asyncSend(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
 }
 
 
-int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERLAPPED *overlapped){
+int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr){
+    OVERLAPPED overlap;
+    memset(&overlap,0,sizeof(OVERLAPPED));
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
@@ -128,7 +132,7 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
         return 0;
     }
     //check for imediate completion
-    if(!WSASendTo(*socket, buff, 1, recvd, 0, addr, sizeof(SOCKADDR_IN), overlapped,
+    if(!WSASendTo(*socket, buff, 1, recvd, 0, addr, sizeof(SOCKADDR_IN), &overlap,
                   workerRoutine_client)){
         //worked first try
         return 1;
@@ -140,7 +144,7 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
             return 0;
         }
         //check for completion
-        if(!WSASendTo(*socket, buff, 1, recvd, 0, addr, sizeof(SOCKADDR_IN), overlapped,
+        if(!WSASendTo(*socket, buff, 1, recvd, 0, addr, sizeof(SOCKADDR_IN), &overlap,
                       workerRoutine_client)){
             //worked now
             return 1;
@@ -157,7 +161,9 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
 }
 
 
-int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped){
+int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd){
+    OVERLAPPED overlap;
+    memset(&overlap,0,sizeof(OVERLAPPED));
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
@@ -172,7 +178,7 @@ int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
     }
     //check for imediate completion
     DWORD flags = 0;
-    if(!WSARecv(*socket, buff, 1, recvd, &flags, overlapped, workerRoutineTCP_server)){
+    if(!WSARecv(*socket, buff, 1, recvd, &flags, &overlap, workerRoutineTCP_server)){
         //worked first try
         return 1;
     }
@@ -185,7 +191,9 @@ int asyncRecv(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped
 }
 
 
-int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overlapped){
+int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd){
+    OVERLAPPED overlap;
+    memset(&overlap,0,sizeof(OVERLAPPED));
     WSAEVENT events[1];
     events[0] = WSACreateEvent();
     //register event
@@ -195,7 +203,7 @@ int asyncRecvFrom(SOCKET *socket, WSABUF *buff, DWORD *recvd, OVERLAPPED *overla
     }
     //check for imediate completion
     DWORD flags = MSG_PARTIAL;
-    if(WSARecvFrom(*socket, buff, 1, recvd, &flags, 0, 0, overlapped, workerRoutineUDP_server)){
+    if(WSARecvFrom(*socket, buff, 1, recvd, &flags, 0, 0, &overlap, workerRoutineUDP_server)){
         //worked first try
         return 1;
     }

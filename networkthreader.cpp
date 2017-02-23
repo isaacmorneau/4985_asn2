@@ -20,7 +20,6 @@ void serverTCP(int port, int buffsize, const string &outFile){
     resultAdd("Starting TCP Server.");
     SOCKADDR_IN addr;
     SOCKET tempSock;
-    memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
     sharedInfo.running = true;
     if((sharedInfo.usingFile = outFile.size() > 0)){
         sharedInfo.file = fstream(outFile.c_str(),ios_base::out | ios_base::binary);
@@ -65,7 +64,7 @@ void serverTCP(int port, int buffsize, const string &outFile){
         sharedInfo.wsabuff.len = buffsize;
     }
     //register the completion routine
-    if(!asyncRecv(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd, &sharedInfo.overlapped))
+    if(!asyncRecv(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd))
         return;
 
     //windows will not run the callback unless the thread is alertable
@@ -89,7 +88,6 @@ void serverUDP(int port, int buffsize, const string &outFile){
     resultClear();
     resultAdd("Starting UDP Server.");
     SOCKADDR_IN addr;
-    memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
     sharedInfo.running = true;
     if((sharedInfo.usingFile = outFile.size() > 0)){
         sharedInfo.file = fstream(outFile.c_str(),ios_base::out | ios_base::binary);
@@ -124,8 +122,7 @@ void serverUDP(int port, int buffsize, const string &outFile){
     auto test = TestSet::getTestSets();
     test->newTest("UDP");
     //register the completion routine
-    if(!asyncRecvFrom(&sharedInfo.sharedSocket, &sharedInfo.wsabuff,
-                     &sharedInfo.recvd,&sharedInfo.overlapped))
+    if(!asyncRecvFrom(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd))
             return;
     resultAdd("Waiting for datagram...");
 
@@ -172,7 +169,7 @@ void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
 
     if(sharedInfo.running)
         if(!asyncRecv(&sharedInfo.sharedSocket, &sharedInfo.wsabuff,
-                     &sharedInfo.recvd, &sharedInfo.overlapped))
+                     &sharedInfo.recvd))
             return;
 }
 
@@ -217,7 +214,7 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
         //only reregister if its still running
         if(sharedInfo.running)
             if(!asyncRecvFrom(&sharedInfo.sharedSocket, &sharedInfo.wsabuff,
-                              &sharedInfo.recvd, &sharedInfo.overlapped))
+                              &sharedInfo.recvd))
                     return;
         break;
     case WSA_OPERATION_ABORTED:
@@ -236,7 +233,6 @@ void clientTCP(const string &dest, int  port, int size, int number, const string
     resultClear();
     resultAdd("Starting TCP Client.");
     SOCKADDR_IN addr;
-    memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
     sharedInfo.running = true;
     if((sharedInfo.usingFile = inFile.size() > 0)){
         sharedInfo.file = fstream(inFile.c_str(),ios_base::in | ios_base::binary);
@@ -294,7 +290,7 @@ void clientTCP(const string &dest, int  port, int size, int number, const string
             --number;
         }
         //register sender completion routine
-        if(!asyncSend(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd, &sharedInfo.overlapped))
+        if(!asyncSend(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd))
             return;
 
         auto test = TestSet::getTestSets();
@@ -318,7 +314,6 @@ void clientUDP(const string &dest, int  port, int size, int number, const string
     resultClear();
     resultAdd("Starting UDP Client.");
     SOCKADDR_IN addr;
-    memset(&sharedInfo.overlapped,0,sizeof(OVERLAPPED));
     sharedInfo.running = true;
     if((sharedInfo.usingFile = inFile.size() > 0)){
         sharedInfo.file = fstream(inFile.c_str(),ios_base::in | ios_base::binary);
@@ -367,8 +362,7 @@ void clientUDP(const string &dest, int  port, int size, int number, const string
             --number;
         }
         //register the sender completion routine
-        if(!asyncSendTo(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd,
-                        (PSOCKADDR)&addr, &sharedInfo.overlapped))
+        if(!asyncSendTo(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd, (PSOCKADDR)&addr))
                 return;
 
         auto test = TestSet::getTestSets();

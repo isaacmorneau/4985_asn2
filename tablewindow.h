@@ -1,3 +1,21 @@
+/**
+ * Program: 4981 Assignment 2
+ *
+ * Source File: tablewindow.cpp
+ *
+ * Class: TableWindow
+ *
+ * Functions:
+ *     void updateData();
+ *
+ * Date: 2017/02/15
+ *
+ * Designer: Isaac Morneau; A00958405
+ *
+ * Programmer: Isaac Morneau; A00958405
+ *
+ * Notes: This window displays the tables for the current test data
+ */
 #ifndef TABLEWINDOW_H
 #define TABLEWINDOW_H
 

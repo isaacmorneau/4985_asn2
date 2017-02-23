@@ -1,3 +1,39 @@
+/**
+ * Program: 4981 Assignment 2
+ *
+ * Source File: testset.cpp
+ *
+ * Class: TestSet
+ *
+ * Functions:
+ *     static TestSet *getTestSets();
+ *
+ *     static void destroyTestSets();
+ *
+ *     void inputCode(const std::string& code);
+ *
+ *     std::string outputCode();
+ *
+ *     void addToTest(double sent, double lost, double size);
+ *
+ *     void newTest(std::string protocol);
+ *
+ *     void extractSets(QtCharts::QBarSet *outTotal, QtCharts::QBarSet *outLost, QtCharts::QBarSet *outSize);
+ *
+ *     void clear()
+ *
+ *     int size()
+ *
+ *     std::tuple<int,int,int,std::string,timedur> at(int index);
+ *
+ * Date: 2017/02/15
+ *
+ * Designer: Isaac Morneau; A00958405
+ *
+ * Programmer: Isaac Morneau; A00958405
+ *
+ * Notes: This is the singleton class that manages all internal test data for the whole application
+ */
 #ifndef TESTSET_H
 #define TESTSET_H
 #include <vector>

@@ -1,3 +1,21 @@
+/**
+ * Program: 4981 Assignment 2
+ *
+ * Source File: statswindow.cpp
+ *
+ * Class: StatsWindow
+ *
+ * Functions:
+ *     void updateData();
+ *
+ * Date: 2017/02/15
+ *
+ * Designer: Isaac Morneau; A00958405
+ *
+ * Programmer: Isaac Morneau; A00958405
+ *
+ * Notes: This window displays the bar charts for the current test data
+ */
 #ifndef STATSWINDOW_H
 #define STATSWINDOW_H
 
