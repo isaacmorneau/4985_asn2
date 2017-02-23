@@ -119,12 +119,12 @@ void serverUDP(int port, int buffsize, const string &outFile){
         sharedInfo.wsabuff.buf = sharedInfo.buffer;
         sharedInfo.wsabuff.len = buffsize;
     }
-    auto test = TestSet::getTestSets();
-    test->newTest("UDP");
     //register the completion routine
     if(!asyncRecvFrom(&sharedInfo.sharedSocket, &sharedInfo.wsabuff, &sharedInfo.recvd))
             return;
     resultAdd("Waiting for datagram...");
+    auto test = TestSet::getTestSets();
+    test->newTest("UDP");
 
     //windows will not run the callback unless the thread is alertable
     //the thread can only be signaled as alertable with a SleepEx
