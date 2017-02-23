@@ -218,6 +218,7 @@ typedef struct _sharedinfo {
     int size;
     WSABUF wsabuff;
     DWORD recvd;
+    OVERLAPPED overlap;
 
     bool running;
 
