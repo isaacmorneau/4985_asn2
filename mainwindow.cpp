@@ -19,6 +19,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     //to facilitate the hack for sending data to the window
     mainwindowptr = this;
+
+    //everything needs this so do it before starting them
+    WSADATA wsaData;
+    if(WSAStartup(0x0202,&wsaData) != 0){
+        resultError("WSAStartup Failed.");
+        return;
+    }
 }
 
 MainWindow::~MainWindow()
@@ -26,6 +33,10 @@ MainWindow::~MainWindow()
     delete ui;
     delete stats;
     delete table;
+
+    if(WSACleanup() != 0){
+        resultError("WSACleanup Failed.");
+    }
 }
 
 void MainWindow::messageAdd_slot(std::string s){
@@ -46,13 +57,6 @@ void MainWindow::on_pushButtonStart_clicked()
 
     ui->pushButtonStart->setEnabled(false);
     ui->pushButtonStop->setEnabled(true);
-
-    //everything needs this so do it before starting them
-    WSADATA wsaData;
-    if(WSAStartup(0x0202,&wsaData) != 0){
-        resultError("WSAStartup Failed.");
-        return;
-    }
 
     std::string dest;
     int port, size, number;
@@ -140,9 +144,6 @@ void MainWindow::on_pushButtonStop_clicked()
         free(sharedInfo.buffer);
     sharedInfo.buffer = 0;
 
-    if(WSACleanup() != 0){
-        resultError("WSACleanup Failed.");
-    }
     if(ui->tabClientServer->currentIndex() == 0){
         //get the test code for the client
         ui->lineEditCodeClient->setText(QString::fromStdString(TestSet::getTestSets()->outputCode()));

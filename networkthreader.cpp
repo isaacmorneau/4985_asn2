@@ -20,6 +20,7 @@ void serverTCP(int port, int buffsize, const string &outFile){
     resultAdd("Starting TCP Server.");
     SOCKADDR_IN addr;
     SOCKET tempSock;
+    sharedInfo.recvd = 0;
     sharedInfo.running = true;
     if((sharedInfo.usingFile = outFile.size() > 0)){
         sharedInfo.file = fstream(outFile.c_str(),ios_base::out | ios_base::binary);
@@ -52,6 +53,7 @@ void serverTCP(int port, int buffsize, const string &outFile){
     resultAdd("Waiting for connection...");
     if(!asyncAccept(tempSock, &sharedInfo.sharedSocket))
         return;
+    closesocket(tempSock);
     resultAdd("Connected.");
 
     auto test = TestSet::getTestSets();
@@ -78,7 +80,6 @@ void serverTCP(int port, int buffsize, const string &outFile){
         free(sharedInfo.buffer);
     if(sharedInfo.usingFile)
         sharedInfo.file.close();
-    closesocket(tempSock);
     resultAdd("Stopping...");
 }
 
@@ -88,6 +89,7 @@ void serverUDP(int port, int buffsize, const string &outFile){
     resultClear();
     resultAdd("Starting UDP Server.");
     SOCKADDR_IN addr;
+    sharedInfo.recvd = 0;
     sharedInfo.running = true;
     if((sharedInfo.usingFile = outFile.size() > 0)){
         sharedInfo.file = fstream(outFile.c_str(),ios_base::out | ios_base::binary);
@@ -167,6 +169,7 @@ void CALLBACK workerRoutineTCP_server(DWORD error, DWORD bytesTrans,
         return;
     }
 
+    sharedInfo.recvd = 0;
     if(sharedInfo.running)
         if(!asyncRecv(&sharedInfo.sharedSocket, &sharedInfo.wsabuff,
                      &sharedInfo.recvd))
@@ -211,6 +214,7 @@ void CALLBACK workerRoutineUDP_server(DWORD error, DWORD bytesTrans,
             return;
         }
 
+        sharedInfo.recvd = 0;
         //only reregister if its still running
         if(sharedInfo.running)
             if(!asyncRecvFrom(&sharedInfo.sharedSocket, &sharedInfo.wsabuff,
@@ -233,6 +237,7 @@ void clientTCP(const string &dest, int  port, int size, int number, const string
     resultClear();
     resultAdd("Starting TCP Client.");
     SOCKADDR_IN addr;
+    sharedInfo.recvd = 0;
     sharedInfo.running = true;
     if((sharedInfo.usingFile = inFile.size() > 0)){
         sharedInfo.file = fstream(inFile.c_str(),ios_base::in | ios_base::binary);
@@ -314,6 +319,7 @@ void clientUDP(const string &dest, int  port, int size, int number, const string
     resultClear();
     resultAdd("Starting UDP Client.");
     SOCKADDR_IN addr;
+    sharedInfo.recvd = 0;
     sharedInfo.running = true;
     if((sharedInfo.usingFile = inFile.size() > 0)){
         sharedInfo.file = fstream(inFile.c_str(),ios_base::in | ios_base::binary);
