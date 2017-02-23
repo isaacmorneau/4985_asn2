@@ -123,6 +123,10 @@ int asyncSendTo(SOCKET *socket, WSABUF *buff, DWORD *recvd,SOCKADDR *addr, OVERL
         resultError("WSAEventSelect failed.");
         return 0;
     }
+    if(WSAWaitForMultipleEvents(1, events, 0, 1, 1) == WSA_WAIT_FAILED){
+        resultError("WSAWaitForMultipleEvents failed.");
+        return 0;
+    }
     //check for imediate completion
     if(!WSASendTo(*socket, buff, 1, recvd, 0, addr, sizeof(SOCKADDR_IN), overlapped,
                   workerRoutine_client)){

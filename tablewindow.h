@@ -22,9 +22,10 @@ public:
     * Programmer: Isaac Morneau; A00958405
     *
     * Interface:
-    *     explicit TableWindow(QWidget *parent = 0);
+    *     explicit TableWindow(
+    * 		QWidget *parent = 0 	- used only by qt when widget has a parent
+    * 		);
     *
-    * Return:
     *
     * Notes: calls parents to intialize the QT window
     */
@@ -41,7 +42,6 @@ public:
     * Interface:
     *     ~TableWindow();
     *
-    * Return:
     *
     * Notes: deletes ui elements saved
     */
@@ -60,6 +60,7 @@ private slots:
     *     void updateData();
     *
     * Return:
+    * 		void
     *
     * Notes: builds the charts to display out of the data in the TestSet instance, with a row per test
     * it displays all saved data, incling sent, lost, size, protocol, time taken

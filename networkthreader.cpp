@@ -79,6 +79,7 @@ void serverTCP(int port, int buffsize, const string &outFile){
         free(sharedInfo.buffer);
     if(sharedInfo.usingFile)
         sharedInfo.file.close();
+    closesocket(tempSock);
     resultAdd("Stopping...");
 }
 

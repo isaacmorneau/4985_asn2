@@ -24,9 +24,9 @@ public:
     * Programmer: Isaac Morneau; A00958405
     *
     * Interface:
-    *     explicit StatsWindow(QWidget *parent = 0);
-    *
-    * Return:
+    *     explicit StatsWindow(
+    * 		QWidget *parent = 0 	- used only by qt when widget has a parent
+    * 		);
     *
     * Notes: creates the window initializing the partent QT window
     */
@@ -43,7 +43,6 @@ public:
     * Interface:
     *     ~StatsWindow();
     *
-    * Return:
     *
     * Notes: delete the saved ui elements
     */
@@ -62,6 +61,7 @@ private slots:
     *     void updateData();
     *
     * Return:
+    * 		void
     *
     * Notes: creates the bar charts out of the data in the TestSets it displays total size, packets sent and packets lost
     */
